@@ -228,6 +228,9 @@ def _report_json(rep) -> dict:
             "weather": rep.synthesis.weather,
             "keywords": rep.synthesis.keywords,
             "accents": rep.synthesis.accents,
+            "resonances": rep.synthesis.resonances,
+            "tensions": rep.synthesis.tensions,
+            "cadence_weather": rep.synthesis.cadence_weather,
         },
         "woven": rep.woven,
         "readings": [

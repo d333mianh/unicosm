@@ -374,6 +374,33 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestSynthesis(unittest.TestCase):
+    def _r(self, key, cad, kws, score=None):
+        from unicosm.models import Cadence, Layer, SystemReading
+        return SystemReading(key=key, title=key, cadence=Cadence(cad),
+                             layer=Layer.COSMIC, summary="", keywords=kws, score=score)
+
+    def test_resonance_and_tension(self):
+        from unicosm.synthesis.weave import synthesize
+        readings = [
+            self._r("a", "daily", ["rest"], 0.5),
+            self._r("b", "hourly", ["rest"], -0.5),
+            self._r("c", "year", ["rest"]),
+            self._r("d", "season", ["grow"]),
+        ]
+        syn = synthesize(readings)
+        self.assertTrue(any("rest" in r for r in syn.resonances))   # 3 systems
+        self.assertTrue(syn.tensions)                               # +0.5 vs -0.5
+        self.assertIn("Today", syn.cadence_weather)                 # daily bucket labeled
+
+    def test_real_report_resonates(self):
+        rep = daily_report(make_profile(),
+                           datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
+                           use_llm=False)
+        self.assertIsInstance(rep.synthesis.resonances, list)
+        self.assertTrue(rep.synthesis.cadence_weather)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

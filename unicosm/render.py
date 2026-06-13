@@ -40,6 +40,10 @@ def cosmic_state(syn: Synthesis, woven: str | None) -> str:
     out.append(f"  {syn.headline}")
     if syn.keywords:
         out.append(dim(f"  themes: {', '.join(syn.keywords)}"))
+    for res in syn.resonances:
+        out.append(f"  {accent('↻')} {res}")
+    for tension in syn.tensions:
+        out.append(f"  {accent('⚖')} {tension}")
     if woven:
         out.append("")
         for line in _wrap(woven, 76):

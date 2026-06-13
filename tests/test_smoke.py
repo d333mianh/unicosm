@@ -333,6 +333,25 @@ class TestRunes(unittest.TestCase):
                 self.assertTrue(r.reversed_meaning)
 
 
+class TestBaZi(unittest.TestCase):
+    def test_year_pillar_metal_horse(self):
+        from unicosm.systems.bazi import compute_bazi
+        c = compute_bazi(_ctx())
+        ys, yb = c["pillars"]["year"]
+        from unicosm.systems.sexagenary import BRANCHES, STEMS
+        # 1990 = Geng (Yang Metal) Wu (Horse)
+        self.assertEqual(STEMS[ys][0], "Gēng")
+        self.assertEqual(BRANCHES[yb][2], "Horse")
+        # eight characters -> element tally sums to 8
+        self.assertEqual(sum(c["tally"].values()), 8)
+
+    def test_day_officer_runs(self):
+        from unicosm.systems.bazi import day_officer
+        r = day_officer(_ctx())
+        self.assertEqual(r.cadence.value, "daily")
+        self.assertTrue(r.summary)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(
@@ -341,7 +360,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 27)
+        self.assertGreaterEqual(len(rep.readings), 29)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

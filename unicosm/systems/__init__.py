@@ -11,6 +11,7 @@ from ..context import DayContext
 from ..models import SystemReading
 from . import (
     astro_age,
+    bazi,
     gene_keys,
     human_design,
     jupiter_cycle,
@@ -37,12 +38,14 @@ REGISTRY = [
     human_design.reading,
     gene_keys.reading,
     vimshottari.janma_nakshatra,
+    bazi.bazi,
     numerology.life_path,
     planetary_hours.reading,
     tcm_organ.reading,
     panchang.timing,
     sexagenary.reading,
     panchang.reading,
+    bazi.day_officer,
     numerology.personal_day,
     human_design.transit,
     transits.reading,

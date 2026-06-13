@@ -279,6 +279,37 @@ def cmd_history(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_remind(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    from datetime import timedelta
+
+    from .context import build_context
+    from .routine.timing import compute as compute_timing
+    ctx = build_context(p)
+    dt = compute_timing(ctx)
+
+    cron_line = f"0 5 * * *  unicosm today --no-llm --profile {p.name}"
+    if a.cron:
+        print("# add to your crontab (crontab -e) for a daily morning summary:")
+        print(cron_line)
+        return 0
+
+    print(render.bold("  Today's reminders"))
+    if dt.sunrise:
+        bm = dt.sunrise - timedelta(minutes=96)
+        print(f"  {render.accent(bm.strftime('%H:%M'))}  Brahma muhurta — practice window opens")
+        print(f"  {render.accent(dt.sunrise.strftime('%H:%M'))}  Sunrise — light & movement")
+        print(f"  {render.accent(dt.abhijit.start.strftime('%H:%M'))}  Abhijit muhurta — auspicious for what matters")
+        for b in dt.inauspicious:
+            print(f"  {render.dim(b.start.strftime('%H:%M'))}  avoid — {b.label} (until {b.end:%H:%M})")
+    else:
+        print(render.dim("  no sun events today (polar)"))
+    print(render.dim(f"\n  for a daily auto-summary: unicosm remind --cron"))
+    return 0
+
+
 def cmd_windows(a: argparse.Namespace) -> int:
     print("Day windows you can anchor habits to (--window KEY):\n")
     for w in WINDOWS:
@@ -431,6 +462,12 @@ def build_parser() -> argparse.ArgumentParser:
     phi.add_argument("--limit", type=int, default=14)
     phi.add_argument("--profile")
     phi.set_defaults(func=cmd_history)
+
+    # remind
+    prm = sub.add_parser("remind", help="today's reminder times + crontab helper")
+    prm.add_argument("--cron", action="store_true", help="print a crontab line only")
+    prm.add_argument("--profile")
+    prm.set_defaults(func=cmd_remind)
 
     # windows
     pw = sub.add_parser("windows", help="list day windows")

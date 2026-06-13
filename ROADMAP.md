@@ -66,13 +66,13 @@ deepening the reading and strengthening the routine.
 - **F3** Resonance detection — themes echoed by 3+ systems surfaced in the
   headline + COSMIC STATE.
 
-## Phase G — Discipline & tracking maturity  ← NEXT
+## ✅ Phase G — Discipline & tracking maturity  (done)
 
-- **G1** Daily check-in / journaling tied to the day's state; `history` view.
-- **G2** Streak analytics, weekly/monthly review, consistency stats.
-- **G3** OS reminders (cron/launchd/systemd) for window starts + auspicious times.
+- **G1** Daily check-in / journaling with the day's state snapshot; `history`.
+- **G2** `stats` — per-habit streaks, 30-day rate, totals, overall consistency.
+- **G3** `remind` — today's reminder times + a crontab helper for a daily summary.
 
-## Phase H — UX, data, quality
+## Phase H — UX, data, quality  ← NEXT
 
 - **H1** Geocoding: city → lat/lon/tz, so onboarding isn't manual coordinates.
 - **H2** Accuracy validation: golden-file tests vs reference calculators

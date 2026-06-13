@@ -374,6 +374,22 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestProfiles(unittest.TestCase):
+    def test_use_and_delete(self):
+        from unicosm import store
+        from dataclasses import replace
+        a = replace(make_profile(), name="PA")
+        b = replace(make_profile(), name="PB")
+        store.save_profile(a, make_active=True)
+        store.save_profile(b, make_active=True)
+        self.assertEqual(store.active_profile().name, "PB")
+        self.assertTrue(store.set_active("PA"))
+        self.assertEqual(store.active_profile().name, "PA")
+        self.assertFalse(store.set_active("nope"))
+        self.assertTrue(store.delete_profile("PB"))
+        self.assertNotIn("PB", store.list_profiles())
+
+
 class TestI18n(unittest.TestCase):
     def test_catalog(self):
         from unicosm import i18n

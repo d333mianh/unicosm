@@ -120,6 +120,21 @@ def get_profile(name: str) -> Profile | None:
         return _row_to_profile(r) if r else None
 
 
+def set_active(name: str) -> bool:
+    with connect() as conn:
+        if not conn.execute("SELECT 1 FROM profile WHERE name = ?", (name,)).fetchone():
+            return False
+        conn.execute("UPDATE profile SET is_active = 0")
+        conn.execute("UPDATE profile SET is_active = 1 WHERE name = ?", (name,))
+        return True
+
+
+def delete_profile(name: str) -> bool:
+    with connect() as conn:
+        cur = conn.execute("DELETE FROM profile WHERE name = ?", (name,))
+        return cur.rowcount > 0
+
+
 def list_profiles() -> list[str]:
     with connect() as conn:
         return [r["name"] for r in conn.execute("SELECT name FROM profile ORDER BY name")]

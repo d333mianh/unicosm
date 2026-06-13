@@ -93,6 +93,49 @@ def cmd_profile_show(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_profile_use(a: argparse.Namespace) -> int:
+    if store.set_active(a.name):
+        print(f"active profile is now '{a.name}'")
+        return 0
+    return _err(f"no profile named '{a.name}'")
+
+
+def cmd_profile_rm(a: argparse.Namespace) -> int:
+    if store.delete_profile(a.name):
+        print(f"removed profile '{a.name}'")
+        return 0
+    return _err(f"no profile named '{a.name}'")
+
+
+def cmd_compare(a: argparse.Namespace) -> int:
+    from .context import compute_natal
+    from .core import astro, ephem
+    pa, pb = store.get_profile(a.a), store.get_profile(a.b)
+    if not pa or not pb:
+        return _err("both profiles must exist (see: unicosm profile show)")
+    na, nb = compute_natal(pa), compute_natal(pb)
+
+    print(render.bold(f"  {pa.name} ✕ {pb.name}"))
+    for nm, n in ((pa.name, na), (pb.name, nb)):
+        print(f"  {render.accent(nm):<22} Sun {n.sign('Sun')}, Moon {n.sign('Moon')}, "
+              f"rising {n.sign('Asc')}")
+    print(render.bold("\n  cross-aspects"))
+    pairs = [("Sun", "Sun"), ("Sun", "Moon"), ("Moon", "Sun"),
+             ("Moon", "Moon"), ("Venus", "Mars"), ("Mars", "Venus")]
+    found = False
+    for x, y in pairs:
+        lum = x in ("Sun", "Moon") or y in ("Sun", "Moon")
+        hit = astro.aspect_between(na.planets[x], nb.planets[y], lum)
+        if hit:
+            found = True
+            name, glyph, orb = hit
+            print(f"  {pa.name}'s {x} {glyph} {pb.name}'s {y}  "
+                  f"{render.dim(f'{name} ({orb:.1f}°)')}")
+    if not found:
+        print(render.dim("  no tight cross-aspects among the key pairs"))
+    return 0
+
+
 def cmd_today(a: argparse.Namespace) -> int:
     p = _resolve_profile(a.profile)
     if not p:
@@ -400,6 +443,18 @@ def build_parser() -> argparse.ArgumentParser:
     ps.set_defaults(func=cmd_profile_set)
     psh = psub.add_parser("show", help="list profiles")
     psh.set_defaults(func=cmd_profile_show)
+    pu = psub.add_parser("use", help="set the active profile")
+    pu.add_argument("name")
+    pu.set_defaults(func=cmd_profile_use)
+    prm2 = psub.add_parser("rm", help="delete a profile")
+    prm2.add_argument("name")
+    prm2.set_defaults(func=cmd_profile_rm)
+
+    # compare (synastry-lite)
+    pcmp = sub.add_parser("compare", help="compare two profiles' charts")
+    pcmp.add_argument("a")
+    pcmp.add_argument("b")
+    pcmp.set_defaults(func=cmd_compare)
 
     # today
     pt = sub.add_parser("today", help="the woven reading + routine for now")

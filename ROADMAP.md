@@ -72,13 +72,12 @@ deepening the reading and strengthening the routine.
 - **G2** `stats` — per-habit streaks, 30-day rate, totals, overall consistency.
 - **G3** `remind` — today's reminder times + a crontab helper for a daily summary.
 
-## Phase H — UX, data, quality  ← NEXT
+## ✅ Phase H — UX, data, quality  (done)
 
-- **H1** Geocoding: city → lat/lon/tz, so onboarding isn't manual coordinates.
-- **H2** Accuracy validation: golden-file tests vs reference calculators
-  (HD chart, dasha dates, Panchang vs Drik Panchang).
-- **H3** i18n: Ukrainian locale behind `t()`; externalize strings.
-- **H4** Profile management: switch/edit/delete, multiple people, comparison.
+- **H1** `--place` city geocoding (bundled gazetteer).
+- **H2** Golden cross-system regression test.
+- **H3** i18n catalog framework + Ukrainian demo (chrome partial).
+- **H4** Profile `use`/`rm` + `compare` (synastry-lite cross-aspects).
 
 ## Phase I — Beyond the CLI (later, optional)
 

@@ -26,6 +26,7 @@ from . import (
     transits,
     vimshottari,
     western_natal,
+    zodiacal_releasing,
 )
 
 # Order is loosely fastest-cadence-first; synthesis re-groups by cadence anyway.
@@ -51,6 +52,7 @@ REGISTRY = [
     vimshottari.antardasha,
     jupiter_cycle.reading,
     vimshottari.mahadasha,
+    zodiacal_releasing.reading,
     progressions.reading,
     astro_age.reading,
 ]

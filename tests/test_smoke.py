@@ -225,6 +225,21 @@ class TestRoutineIntelligence(unittest.TestCase):
         self.assertTrue(notes)
 
 
+class TestZodiacalReleasing(unittest.TestCase):
+    def test_zr_runs(self):
+        from unicosm.systems.zodiacal_releasing import reading
+        r = reading(_ctx())
+        self.assertIn(r.detail["sect"], ("day", "night"))
+        self.assertIn("L1", r.detail)
+        self.assertIn("L2", r.detail)
+
+    def test_lesser_years(self):
+        from unicosm.systems.zodiacal_releasing import _sign_years
+        self.assertEqual(_sign_years("Capricorn"), 30)   # Saturn
+        self.assertEqual(_sign_years("Cancer"), 25)      # Moon
+        self.assertEqual(_sign_years("Libra"), 8)        # Venus
+
+
 class TestProgressions(unittest.TestCase):
     def test_progressed_sun_advances(self):
         from unicosm.systems.progressions import reading
@@ -251,7 +266,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 23)
+        self.assertGreaterEqual(len(rep.readings), 24)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

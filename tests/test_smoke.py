@@ -352,6 +352,15 @@ class TestBaZi(unittest.TestCase):
         self.assertTrue(r.summary)
 
 
+class TestSky(unittest.TestCase):
+    def test_mechanics(self):
+        from unicosm.systems.sky import mechanics
+        r = mechanics(_ctx())
+        self.assertEqual(r.cadence.value, "daily")
+        self.assertIn("moon_void_of_course", r.detail)
+        self.assertIsInstance(r.detail["retrograde"], (list, str))
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(
@@ -360,7 +369,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 29)
+        self.assertGreaterEqual(len(rep.readings), 30)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

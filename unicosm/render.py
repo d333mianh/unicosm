@@ -28,6 +28,11 @@ def accent(s: str) -> str:
     return _c("36", s)
 
 
+def bar(fraction: float, width: int = 10) -> str:
+    filled = round(max(0.0, min(1.0, fraction)) * width)
+    return "▓" * filled + "░" * (width - filled)
+
+
 def header(profile, now) -> str:
     line1 = bold(f"☉ Unicosm — {profile.name}")
     line2 = f"{now:%A, %d %B %Y · %H:%M %Z}"

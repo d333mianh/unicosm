@@ -23,6 +23,15 @@ def current_streak(habit_id: int, today: date) -> int:
     return streak
 
 
+def window_stats(habit_id: int, today: date, days: int = 30) -> dict:
+    """Completion count + rate over the last `days`, and lifetime total."""
+    all_days = store.completion_days(habit_id)
+    cutoff = today - timedelta(days=days - 1)
+    recent = sum(1 for d in all_days if cutoff <= date.fromisoformat(d) <= today)
+    return {"recent": recent, "days": days, "rate": recent / days,
+            "total": len(all_days)}
+
+
 def longest_streak(habit_id: int) -> int:
     days = sorted(store.completion_days(habit_id))
     if not days:

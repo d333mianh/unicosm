@@ -210,6 +210,31 @@ def cmd_draws(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_stats(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    habits = store.list_habits(p.name)
+    if not habits:
+        print("no habits yet. Add one: unicosm habit add \"Meditate\"")
+        return 0
+    from .routine.tracker import current_streak, longest_streak, window_stats
+    today = now_in(p.cur_tz).date()
+    print(render.bold(f"  Consistency · last {a.days} days"))
+    rates = []
+    for h in habits:
+        cs = current_streak(h.id, today)
+        ls = longest_streak(h.id)
+        w = window_stats(h.id, today, a.days)
+        rates.append(w["rate"])
+        bar = render.bar(w["rate"])
+        meta = render.dim(f"streak {cs} (best {ls}) · {w['total']} total")
+        print(f"  #{h.id:<3} {h.name:<24} {bar} {w['rate']*100:3.0f}%  {meta}")
+    overall = sum(rates) / len(rates)
+    print(render.dim(f"\n  overall consistency: {overall*100:.0f}%"))
+    return 0
+
+
 def cmd_checkin(a: argparse.Namespace) -> int:
     p = _resolve_profile(a.profile)
     if not p:
@@ -386,6 +411,12 @@ def build_parser() -> argparse.ArgumentParser:
     pdh.add_argument("--limit", type=int, default=10)
     pdh.add_argument("--profile")
     pdh.set_defaults(func=cmd_draws)
+
+    # stats
+    pst = sub.add_parser("stats", help="habit consistency & streaks")
+    pst.add_argument("--days", type=int, default=30)
+    pst.add_argument("--profile")
+    pst.set_defaults(func=cmd_stats)
 
     # checkin / history
     pci = sub.add_parser("checkin", help="log today's mood/energy + a note")

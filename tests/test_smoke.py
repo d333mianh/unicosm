@@ -374,6 +374,19 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestStats(unittest.TestCase):
+    def test_window_stats(self):
+        from unicosm import store
+        from unicosm.routine.tracker import window_stats
+        hid = store.add_habit("StatsUser", "x", None)
+        for d in ("2026-06-13", "2026-06-12", "2026-05-01"):
+            store.log_completion(hid, d)
+        w = window_stats(hid, date(2026, 6, 13), days=30)
+        self.assertEqual(w["recent"], 2)     # only the two June dates in window
+        self.assertEqual(w["total"], 3)
+        self.assertAlmostEqual(w["rate"], 2 / 30)
+
+
 class TestCheckin(unittest.TestCase):
     def test_roundtrip_and_upsert(self):
         from unicosm import store

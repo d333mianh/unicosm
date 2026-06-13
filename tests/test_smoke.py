@@ -143,6 +143,38 @@ class TestVimshottari(unittest.TestCase):
         self.assertLessEqual(praty.end_jd, antar.end_jd + 1e-6)
 
 
+class TestPanchang(unittest.TestCase):
+    def test_tithi_boundaries(self):
+        from unicosm.systems.panchang import _tithi
+        self.assertEqual(_tithi(0.0)["name"], "Pratipada")
+        self.assertEqual(_tithi(0.0)["paksha"].split()[0], "Shukla")
+        self.assertEqual(_tithi(174.0)["name"], "Purnima")        # tithi 15
+        self.assertEqual(_tithi(180.0)["paksha"].split()[0], "Krishna")
+        self.assertEqual(_tithi(354.0)["name"], "Amavasya")       # tithi 30
+
+    def test_karana_sequence(self):
+        from unicosm.systems.panchang import _karana
+        self.assertEqual(_karana(0.0), "Kimstughna")              # idx 0, first fixed
+        self.assertEqual(_karana(6.0), "Bava")                    # idx 1, first movable
+        self.assertEqual(_karana(342.0), "Shakuni")              # idx 57
+        self.assertEqual(_karana(354.0), "Naga")                 # idx 59, last fixed
+
+    def test_compute_runs(self):
+        from unicosm.systems.panchang import compute
+        from unicosm.data.panchang import YOGA_NAMES
+        from unicosm.data.vimshottari import NAKSHATRAS
+        p = compute(_ctx())
+        self.assertIn(p["nakshatra"], NAKSHATRAS)
+        self.assertIn(p["yoga"], YOGA_NAMES)
+        self.assertTrue(1 <= p["tithi"]["num"] <= 30)
+
+
+def _ctx():
+    from unicosm.context import build_context
+    return build_context(make_profile(),
+                         datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")))
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

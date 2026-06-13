@@ -316,6 +316,23 @@ class TestTarot(unittest.TestCase):
         self.assertEqual(draw_cards(random.Random(9), 3)[0].name, spread[0].name)
 
 
+class TestRunes(unittest.TestCase):
+    def test_deck_and_invertibility(self):
+        import random
+        from unicosm.data.runes import RUNES
+        from unicosm.divination.runes import draw_runes
+        self.assertEqual(len(RUNES), 24)
+        # symmetric runes carry no reversed text and never come up merkstave
+        for name, glyph, up, rev, invertible in RUNES:
+            if not invertible:
+                self.assertEqual(rev, "")
+        spread = draw_runes(random.Random(5), 3)
+        self.assertEqual(len(spread), 3)
+        for r in spread:
+            if r.merkstave:
+                self.assertTrue(r.reversed_meaning)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

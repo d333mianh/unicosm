@@ -43,15 +43,14 @@ deepening the reading and strengthening the routine.
 - **C2** Solar & lunar return charts (year / lunar-month keynote).
 - **C3** Numerology pinnacles & challenges (current stage by age).
 
-## Phase D — On-demand divination (`unicosm draw`)  ← NEXT
+## ✅ Phase D — On-demand divination (`unicosm draw`)  (done)
 
-*Fills the empty 4th functional layer; new command + draw history.*
+- **D1** I Ching — coin cast, changing lines, relating hexagram.
+- **D2** Tarot — 78-card deck, single card + 3-card spread, reversals.
+- **D3** Runes — Elder Futhark, single + three-rune, merkstave.
+- Shared `draw`/`draws` commands + SQLite draw history; `--daily`/`--seed`.
 
-- **D1** I Ching — hexagram + changing lines (+ the calendrical hexagram layer).
-- **D2** Tarot — 78-card deck, daily card + 3-card spread, reversals.
-- **D3** Runes — Elder Futhark, single + three-rune.
-
-## Phase E — Cosmic-weather breadth
+## Phase E — Cosmic-weather breadth  ← NEXT
 
 - **E1** Chinese: BaZi four pillars, Tong Shu day officers + activity verdicts,
   72 pentads.

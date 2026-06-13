@@ -175,6 +175,20 @@ def _ctx():
                          datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")))
 
 
+class TestTiming(unittest.TestCase):
+    def test_bands(self):
+        from unicosm.routine.timing import compute
+        dt = compute(_ctx())
+        self.assertEqual(len(dt.day_choghadiya), 8)
+        self.assertEqual(len(dt.night_choghadiya), 8)
+        # Rahu/Yama/Gulika are all inauspicious; Abhijit is good
+        self.assertTrue(all(b.quality == "bad" for b in dt.inauspicious))
+        self.assertEqual(dt.abhijit.quality, "good")
+        # bands sit within the daylight window
+        for b in dt.inauspicious:
+            self.assertTrue(dt.sunrise <= b.start < dt.sunset)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(
@@ -183,7 +197,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 18)
+        self.assertGreaterEqual(len(rep.readings), 20)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

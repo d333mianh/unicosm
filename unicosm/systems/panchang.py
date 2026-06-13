@@ -68,6 +68,47 @@ def compute(ctx) -> dict:
     }
 
 
+def timing(ctx) -> SystemReading | None:
+    """Hourly layer: current Choghadiya + any inauspicious band right now."""
+    from ..routine.timing import compute as compute_timing
+    dt = compute_timing(ctx)
+    if dt.sunrise is None:
+        return None
+    now = ctx.now
+    cur = dt.current_choghadiya(now)
+    bad = dt.active_inauspicious(now)
+    nxt_good = next((b for b in dt.day_choghadiya
+                     if b.start > now and b.quality == "good"), None)
+
+    parts: list[str] = []
+    score = None
+    if bad:
+        parts.append(f"{bad.label} until {bad.end:%H:%M} — {bad.note}")
+        score = -0.4
+    if cur:
+        parts.append(f"{cur.label} now ({cur.note})")
+        if score is None:
+            score = {"good": 0.4, "neutral": 0.1, "bad": -0.3}[cur.quality]
+    if nxt_good and not (cur and cur.quality == "good"):
+        parts.append(f"next good window {nxt_good.start:%H:%M} ({nxt_good.label.split()[-1]})")
+    summary = "; ".join(parts) + "." if parts else "Timing: no special bands now."
+
+    return SystemReading(
+        key="panchang_timing",
+        title="Day timing (Choghadiya)",
+        cadence=Cadence.HOURLY,
+        layer=Layer.COSMIC,
+        summary=summary,
+        detail={
+            "current_choghadiya": cur.label if cur else None,
+            "inauspicious_now": bad.label if bad else None,
+            "abhijit": dt.abhijit.time_label if dt.abhijit else None,
+        },
+        keywords=["time it well"],
+        score=score,
+    )
+
+
 def reading(ctx) -> SystemReading:
     p = compute(ctx)
     t = p["tithi"]

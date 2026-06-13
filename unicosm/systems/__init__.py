@@ -35,6 +35,7 @@ REGISTRY = [
     numerology.life_path,
     planetary_hours.reading,
     tcm_organ.reading,
+    panchang.timing,
     sexagenary.reading,
     panchang.reading,
     numerology.personal_day,

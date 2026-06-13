@@ -225,6 +225,15 @@ class TestRoutineIntelligence(unittest.TestCase):
         self.assertTrue(notes)
 
 
+class TestTransits(unittest.TestCase):
+    def test_transits_run(self):
+        from unicosm.systems.transits import reading
+        r = reading(_ctx())
+        self.assertEqual(r.cadence.value, "daily")
+        self.assertEqual(r.layer.value, "personal")
+        self.assertIn("active", r.detail)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(
@@ -233,7 +242,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 21)
+        self.assertGreaterEqual(len(rep.readings), 22)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

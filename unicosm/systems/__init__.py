@@ -22,6 +22,7 @@ from . import (
     sexagenary,
     solar_term,
     tcm_organ,
+    transits,
     vimshottari,
     western_natal,
 )
@@ -41,6 +42,7 @@ REGISTRY = [
     panchang.reading,
     numerology.personal_day,
     human_design.transit,
+    transits.reading,
     moon_phase.reading,
     solar_term.reading,
     profections.reading,

@@ -50,16 +50,15 @@ deepening the reading and strengthening the routine.
 - **D3** Runes — Elder Futhark, single + three-rune, merkstave.
 - Shared `draw`/`draws` commands + SQLite draw history; `--daily`/`--seed`.
 
-## Phase E — Cosmic-weather breadth  ← NEXT
+## ✅ Phase E — Cosmic-weather breadth  (done)
 
-- **E1** Chinese: BaZi four pillars, Tong Shu day officers + activity verdicts,
-  72 pentads.
-- **E2** Western daily mechanics: void-of-course Moon, retrogrades, ingresses.
-- **E3** Mayan Tzolkin / Dreamspell, Maria Thun biodynamic day, Sabian symbol.
-- **E4** Secular: sunrise/sunset/day-length surfaced, eclipses, (optional online)
-  Kp geomagnetic index.
+- **E1** BaZi four pillars (blueprint) + Tong Shu Day Officer (Jian Chu).
+- **E2** Sky mechanics: retrogrades + void-of-course Moon.
+- **E3** Maria Thun biodynamic day (root/leaf/flower/fruit).
+- **E4** Sky data: day length + next solar/lunar eclipse.
+- Deferred: Tzolkin/Dreamspell, Sabian symbols, Kp index, 72 pentads.
 
-## Phase F — Synthesis & intelligence
+## Phase F — Synthesis & intelligence  ← NEXT
 
 - **F1** Upgrade the deterministic weave: use *all* readings, complementarity
   rules, surface genuine tensions, per-cadence favorability.

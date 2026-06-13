@@ -12,6 +12,7 @@ from ..models import SystemReading
 from . import (
     astro_age,
     bazi,
+    biodynamic,
     gene_keys,
     human_design,
     jupiter_cycle,
@@ -51,6 +52,7 @@ REGISTRY = [
     human_design.transit,
     transits.reading,
     sky.mechanics,
+    biodynamic.reading,
     returns.lunar_return,
     moon_phase.reading,
     solar_term.reading,
@@ -64,6 +66,7 @@ REGISTRY = [
     progressions.reading,
     numerology.pinnacles,
     astro_age.reading,
+    sky.sky_data,
 ]
 
 

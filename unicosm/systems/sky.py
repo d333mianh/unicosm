@@ -40,6 +40,45 @@ def _void_of_course(jd: float) -> tuple[bool, float]:
     return best > arc_to_sign_end, best
 
 
+def _eclipse_date(fn, jd: float) -> str | None:
+    try:
+        _ret, tret = fn(jd, swe.FLG_MOSEPH, 0, False)
+        y, m, d, _ = swe.revjul(tret[0], swe.GREG_CAL)
+        return f"{y:04d}-{m:02d}-{d:02d}"
+    except Exception:
+        return None
+
+
+def sky_data(ctx) -> SystemReading:
+    from ..core.timeutil import local_midnight
+    jd0 = ephem.jd_ut(local_midnight(ctx.now))
+    sr = ephem.next_sunrise(jd0, ctx.lat, ctx.lon)
+    ss = ephem.next_sunset(jd0, ctx.lat, ctx.lon)
+    if sr and ss:
+        hours = (ss - sr) * 24
+        daylen = f"{int(hours)}h{int((hours % 1) * 60):02d}m of daylight"
+    else:
+        daylen = "polar day/night"
+
+    next_solar = _eclipse_date(swe.sol_eclipse_when_glob, ctx.jd_now)
+    next_lunar = _eclipse_date(swe.lun_eclipse_when, ctx.jd_now)
+    illum = ephem.moon_phase(ctx.jd_now)["illumination"]
+
+    return SystemReading(
+        key="sky_data",
+        title="Sky data",
+        cadence=Cadence.ERA,
+        layer=Layer.COSMIC,
+        summary=(
+            f"{daylen}; Moon {illum*100:.0f}% lit. "
+            f"Next eclipses — solar {next_solar}, lunar {next_lunar}."
+        ),
+        detail={"daylight": daylen, "moon_illumination": round(illum, 2),
+                "next_solar_eclipse": next_solar, "next_lunar_eclipse": next_lunar},
+        keywords=["ground", "sky"],
+    )
+
+
 def mechanics(ctx) -> SystemReading:
     jd = ctx.jd_now
     retro = [name for name, ipl in RETRO_BODIES.items()

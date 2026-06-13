@@ -360,6 +360,19 @@ class TestSky(unittest.TestCase):
         self.assertIn("moon_void_of_course", r.detail)
         self.assertIsInstance(r.detail["retrograde"], (list, str))
 
+    def test_sky_data_eclipses(self):
+        from unicosm.systems.sky import sky_data
+        r = sky_data(_ctx())
+        # eclipse dates resolve to ISO-ish strings
+        self.assertRegex(r.detail["next_solar_eclipse"], r"^\d{4}-\d{2}-\d{2}$")
+        self.assertRegex(r.detail["next_lunar_eclipse"], r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_biodynamic_day_type(self):
+        from unicosm.systems.biodynamic import reading
+        r = reading(_ctx())
+        self.assertIn(r.detail["day_type"],
+                      {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
+
 
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
@@ -369,7 +382,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 30)
+        self.assertGreaterEqual(len(rep.readings), 32)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

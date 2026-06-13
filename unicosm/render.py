@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sys
 
+from .i18n import t
 from .models import CADENCE_LABEL, CADENCE_ORDER, Cadence, SystemReading
 from .routine.scheduler import RoutineBlock
 from .synthesis.weave import Synthesis
@@ -41,10 +42,10 @@ def header(profile, now) -> str:
 
 
 def cosmic_state(syn: Synthesis, woven: str | None) -> str:
-    out = [bold("\n  COSMIC STATE  ") + dim(f"({syn.weather})")]
+    out = [bold("\n  " + t("COSMIC STATE") + "  ") + dim(f"({syn.weather})")]
     out.append(f"  {syn.headline}")
     if syn.keywords:
-        out.append(dim(f"  themes: {', '.join(syn.keywords)}"))
+        out.append(dim(f"  {t('themes')}: {', '.join(syn.keywords)}"))
     for res in syn.resonances:
         out.append(f"  {accent('↻')} {res}")
     for tension in syn.tensions:
@@ -64,12 +65,12 @@ def layers(readings: list[SystemReading]) -> str:
     for r in readings:
         by_cadence.setdefault(r.cadence, []).append(r)
 
-    out = [bold("\n  LAYERS")]
+    out = [bold("\n  " + t("LAYERS"))]
     for cad in CADENCE_ORDER:
         items = by_cadence.get(cad)
         if not items:
             continue
-        label = CADENCE_LABEL[cad]
+        label = t(CADENCE_LABEL[cad])
         for i, r in enumerate(items):
             tag = accent(f"{label:<{_LABEL_W}}") if i == 0 else " " * _LABEL_W
             out.append(f"  {tag}{r.summary}")
@@ -77,7 +78,7 @@ def layers(readings: list[SystemReading]) -> str:
     bp = by_cadence.get(Cadence.BLUEPRINT)
     if bp:
         for i, r in enumerate(bp):
-            tag = accent(f"{'Blueprint':<{_LABEL_W}}") if i == 0 else " " * _LABEL_W
+            tag = accent(f"{t('Blueprint'):<{_LABEL_W}}") if i == 0 else " " * _LABEL_W
             out.append(f"  {tag}{r.summary}")
     return "\n".join(out)
 
@@ -85,7 +86,7 @@ def layers(readings: list[SystemReading]) -> str:
 def accents(syn: Synthesis) -> str:
     if not syn.accents:
         return ""
-    out = [bold("\n  ACCENTS FOR TODAY")]
+    out = [bold("\n  " + t("ACCENTS FOR TODAY"))]
     for a in syn.accents:
         out.append(f"   • {a}")
     return "\n".join(out)
@@ -95,7 +96,7 @@ def timing(dt, now) -> str:
     """The day's auspicious / inauspicious time-bands."""
     if dt is None or dt.sunrise is None:
         return ""
-    out = [bold("\n  TODAY'S TIMING")]
+    out = [bold("\n  " + t("TODAY'S TIMING"))]
     out.append(f"  {dim('sun')} {dt.sunrise:%H:%M}–{dt.sunset:%H:%M}"
                f"   {dim('Abhijit')} {dt.abhijit.time_label}")
 
@@ -118,7 +119,7 @@ def timing(dt, now) -> str:
 
 
 def routine(blocks: list[RoutineBlock], show_empty: bool) -> str:
-    out = [bold("\n  ROUTINE")]
+    out = [bold("\n  " + t("ROUTINE"))]
     any_rows = False
     for b in blocks:
         has = bool(b.habits)

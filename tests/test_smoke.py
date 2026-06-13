@@ -374,6 +374,21 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestI18n(unittest.TestCase):
+    def test_catalog(self):
+        from unicosm import i18n
+        saved = i18n.LOCALE
+        try:
+            i18n.LOCALE = "uk"
+            self.assertEqual(i18n.t("Today"), "Сьогодні")
+            self.assertEqual(i18n.t("LAYERS"), "ШАРИ")
+            self.assertEqual(i18n.t("not-in-catalog"), "not-in-catalog")  # fallback
+            i18n.LOCALE = "en"
+            self.assertEqual(i18n.t("Today"), "Today")
+        finally:
+            i18n.LOCALE = saved
+
+
 class TestCities(unittest.TestCase):
     def test_lookup(self):
         from unicosm.data.cities import lookup

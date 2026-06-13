@@ -374,6 +374,16 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestCities(unittest.TestCase):
+    def test_lookup(self):
+        from unicosm.data.cities import lookup
+        lat, lon, tz = lookup("Kyiv")
+        self.assertAlmostEqual(lat, 50.45, places=1)
+        self.assertEqual(tz, "Europe/Kyiv")
+        self.assertEqual(lookup("kyiv"), lookup("KYIV"))   # case-insensitive
+        self.assertIsNone(lookup("Atlantis"))
+
+
 class TestStats(unittest.TestCase):
     def test_window_stats(self):
         from unicosm import store

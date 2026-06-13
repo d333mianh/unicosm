@@ -45,27 +45,38 @@ def _parse_when(profile: Profile, date_s: str | None, time_s: str | None) -> dat
 # ---- commands -----------------------------------------------------------
 
 def cmd_profile_set(a: argparse.Namespace) -> int:
+    from .data.cities import lookup
+
+    lat, lon, tz = a.lat, a.lon, a.tz
+    if a.place:
+        hit = lookup(a.place)
+        if not hit:
+            return _err(f"unknown place '{a.place}'. Pass --lat/--lon/--tz, "
+                        "or try a major city name.")
+        lat, lon, tz = hit
+    if lat is None or lon is None or tz is None:
+        return _err("give a birth location: --place \"Kyiv\" or --lat/--lon/--tz")
     try:
-        ZoneInfo(a.tz)
+        ZoneInfo(tz)
     except ZoneInfoNotFoundError:
-        return _err(f"unknown timezone: {a.tz} (use an IANA name like Europe/Kyiv)")
+        return _err(f"unknown timezone: {tz} (use an IANA name like Europe/Kyiv)")
     try:
         birth = datetime.strptime(a.birth, "%Y-%m-%d %H:%M")
     except ValueError:
         return _err('birth must be "YYYY-MM-DD HH:MM" (e.g. "1990-03-21 14:30")')
-    birth = birth.replace(tzinfo=ZoneInfo(a.tz))
+    birth = birth.replace(tzinfo=ZoneInfo(tz))
 
-    cur_tz = a.cur_tz or a.tz
-    cur_lat = a.cur_lat if a.cur_lat is not None else a.lat
-    cur_lon = a.cur_lon if a.cur_lon is not None else a.lon
+    cur_tz = a.cur_tz or tz
+    cur_lat = a.cur_lat if a.cur_lat is not None else lat
+    cur_lon = a.cur_lon if a.cur_lon is not None else lon
     p = Profile(
-        name=a.name, birth_dt=birth, birth_tz=a.tz,
-        birth_lat=a.lat, birth_lon=a.lon,
+        name=a.name, birth_dt=birth, birth_tz=tz,
+        birth_lat=lat, birth_lon=lon,
         cur_tz=cur_tz, cur_lat=cur_lat, cur_lon=cur_lon,
     )
     store.save_profile(p, make_active=True)
     print(f"saved profile '{a.name}' (active).")
-    print(f"  born {p.birth_label} at {a.lat}, {a.lon}")
+    print(f"  born {p.birth_label} at {lat}, {lon}")
     print(f"  current location: {cur_lat}, {cur_lon} ({cur_tz})")
     return 0
 
@@ -379,9 +390,10 @@ def build_parser() -> argparse.ArgumentParser:
     ps = psub.add_parser("set", help="create/update a profile")
     ps.add_argument("--name", required=True)
     ps.add_argument("--birth", required=True, help='"YYYY-MM-DD HH:MM" (local birth time)')
-    ps.add_argument("--tz", required=True, help="IANA tz of birth, e.g. Europe/Kyiv")
-    ps.add_argument("--lat", required=True, type=float, help="birth latitude (N+)")
-    ps.add_argument("--lon", required=True, type=float, help="birth longitude (E+)")
+    ps.add_argument("--place", help="known city name (fills lat/lon/tz)")
+    ps.add_argument("--tz", help="IANA tz of birth, e.g. Europe/Kyiv")
+    ps.add_argument("--lat", type=float, help="birth latitude (N+)")
+    ps.add_argument("--lon", type=float, help="birth longitude (E+)")
     ps.add_argument("--cur-tz", help="current tz (default: birth tz)")
     ps.add_argument("--cur-lat", type=float, help="current latitude")
     ps.add_argument("--cur-lon", type=float, help="current longitude")

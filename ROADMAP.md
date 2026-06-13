@@ -58,16 +58,15 @@ deepening the reading and strengthening the routine.
 - **E4** Sky data: day length + next solar/lunar eclipse.
 - Deferred: Tzolkin/Dreamspell, Sabian symbols, Kp index, 72 pentads.
 
-## Phase F — Synthesis & intelligence  ← NEXT
+## ✅ Phase F — Synthesis & intelligence  (done)
 
-- **F1** Upgrade the deterministic weave: use *all* readings, complementarity
-  rules, surface genuine tensions, per-cadence favorability.
-- **F2** LLM narrative: tune the prompt, test live (needs a key in the runtime
-  shell), response caching, model config.
-- **F3** Resonance detection — the real "complementary" payoff: flag when many
-  systems independently point the same way (e.g. "rest/release today").
+- **F1** Weave upgrade: uses all readings, per-cadence favorability, tensions.
+- **F2** LLM narrative: resonance/tension-aware prompt, on-disk caching, env
+  model config, graceful fallback. (Live output needs a key at runtime.)
+- **F3** Resonance detection — themes echoed by 3+ systems surfaced in the
+  headline + COSMIC STATE.
 
-## Phase G — Discipline & tracking maturity
+## Phase G — Discipline & tracking maturity  ← NEXT
 
 - **G1** Daily check-in / journaling tied to the day's state; `history` view.
 - **G2** Streak analytics, weekly/monthly review, consistency stats.

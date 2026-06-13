@@ -401,6 +401,21 @@ class TestSynthesis(unittest.TestCase):
         self.assertTrue(rep.synthesis.cadence_weather)
 
 
+class TestLLM(unittest.TestCase):
+    def test_no_key_and_cache(self):
+        import os
+        os.environ.pop("ANTHROPIC_API_KEY", None)
+        from unicosm.synthesis import llm
+        from unicosm.synthesis.weave import synthesize
+        from unicosm.systems import all_readings
+        rds = all_readings(_ctx())
+        base = synthesize(rds)
+        self.assertIsNone(llm.enhance(rds, base))         # no key -> None
+        path = llm._cache_path(llm._payload(rds, base))
+        path.write_text("woven.", encoding="utf-8")
+        self.assertEqual(llm.enhance(rds, base), "woven.")  # cache hit
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

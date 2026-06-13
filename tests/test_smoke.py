@@ -225,6 +225,15 @@ class TestRoutineIntelligence(unittest.TestCase):
         self.assertTrue(notes)
 
 
+class TestProgressions(unittest.TestCase):
+    def test_progressed_sun_advances(self):
+        from unicosm.systems.progressions import reading
+        r = reading(_ctx())
+        self.assertEqual(r.cadence.value, "decade")
+        # ~36 yrs -> progressed Sun ~36° past natal 0° Aries -> Taurus
+        self.assertIn("Taurus", r.detail["progressed_sun"])
+
+
 class TestTransits(unittest.TestCase):
     def test_transits_run(self):
         from unicosm.systems.transits import reading
@@ -242,7 +251,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 22)
+        self.assertGreaterEqual(len(rep.readings), 23)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

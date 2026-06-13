@@ -19,6 +19,7 @@ from . import (
     panchang,
     planetary_hours,
     profections,
+    progressions,
     sexagenary,
     solar_term,
     tcm_organ,
@@ -50,6 +51,7 @@ REGISTRY = [
     vimshottari.antardasha,
     jupiter_cycle.reading,
     vimshottari.mahadasha,
+    progressions.reading,
     astro_age.reading,
 ]
 

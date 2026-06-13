@@ -240,6 +240,22 @@ class TestZodiacalReleasing(unittest.TestCase):
         self.assertEqual(_sign_years("Libra"), 8)        # Venus
 
 
+class TestReturns(unittest.TestCase):
+    def test_solar_return_near_birthday(self):
+        from unicosm.systems.returns import solar_return
+        r = solar_return(_ctx())
+        # natal Sun ~0° Aries -> solar return falls in March
+        self.assertTrue(r.detail["date"].startswith("2026-03"))
+
+    def test_lunar_return_recent(self):
+        from datetime import date
+        from unicosm.systems.returns import lunar_return
+        r = lunar_return(_ctx())
+        d = date.fromisoformat(r.detail["date"])
+        days = (date(2026, 6, 13) - d).days
+        self.assertTrue(0 <= days <= 28)   # within the current lunar month
+
+
 class TestProgressions(unittest.TestCase):
     def test_progressed_sun_advances(self):
         from unicosm.systems.progressions import reading
@@ -266,7 +282,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 24)
+        self.assertGreaterEqual(len(rep.readings), 26)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

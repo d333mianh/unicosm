@@ -450,6 +450,27 @@ class TestLLM(unittest.TestCase):
         self.assertEqual(llm.enhance(rds, base), "woven.")  # cache hit
 
 
+class TestGolden(unittest.TestCase):
+    """Pin verified cross-system outputs for the canonical chart so future
+    changes that shift results are caught."""
+
+    def test_canonical_chart(self):
+        rep = daily_report(make_profile(),
+                           datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
+                           use_llm=False)
+        r = {x.key: x for x in rep.readings}
+        self.assertEqual(r["bazi"].detail["year"], "Gēng-Wǔ")          # 1990 Metal Horse
+        self.assertEqual(r["vimshottari_maha"].detail["lord"], "Rahu")
+        self.assertTrue(r["zodiacal_releasing"].detail["L1"].startswith("Capricorn"))
+        self.assertEqual(r["human_design"].detail["type"], "Generator")
+        self.assertTrue(r["human_design"].detail["profile"].startswith("3/5"))
+        self.assertEqual(r["janma_nakshatra"].detail["nakshatra"], "Uttara Ashadha")
+        self.assertEqual(r["numerology_life_path"].detail["life_path"], 7)
+        self.assertEqual(r["sexagenary"].detail["pillar"], "Wù Wǔ")    # today's day pillar
+        self.assertTrue(r["day_officer"].detail["officer"].startswith("Establish"))
+        self.assertEqual(r["gene_keys"].detail["Life's Work"][:6], "GK25.3"[:6])
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

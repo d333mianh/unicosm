@@ -303,6 +303,19 @@ class TestIChing(unittest.TestCase):
             self.assertIsNotNone(a.relating)
 
 
+class TestTarot(unittest.TestCase):
+    def test_deck_and_draw(self):
+        import random
+        from unicosm.divination.tarot import _deck, draw_cards
+        deck = _deck()
+        self.assertEqual(len(deck), 78)
+        self.assertEqual(len({c[0] for c in deck}), 78)
+        spread = draw_cards(random.Random(9), 3)
+        self.assertEqual(len(spread), 3)
+        # deterministic
+        self.assertEqual(draw_cards(random.Random(9), 3)[0].name, spread[0].name)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

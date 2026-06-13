@@ -12,6 +12,8 @@ from .context import build_context
 from .core.timeutil import civil_date
 from .models import Profile, SystemReading
 from .routine.scheduler import RoutineBlock, build_routine
+from .routine.timing import DayTiming
+from .routine.timing import compute as compute_timing
 from .synthesis import llm
 from .synthesis.weave import Synthesis, synthesize
 from .systems import all_readings
@@ -25,6 +27,7 @@ class DailyReport:
     synthesis: Synthesis
     woven: str | None
     routine: list[RoutineBlock]
+    timing: DayTiming
 
 
 def daily_report(profile: Profile, now: datetime | None = None,
@@ -35,5 +38,6 @@ def daily_report(profile: Profile, now: datetime | None = None,
     woven = llm.enhance(readings, syn) if use_llm else None
     habits = store.list_habits(profile.name)
     done = store.completions_for_day(profile.name, civil_date(ctx.now))
-    routine = build_routine(ctx, habits, done)
-    return DailyReport(profile, ctx.now, readings, syn, woven, routine)
+    timing = compute_timing(ctx)
+    routine = build_routine(ctx, habits, done, timing)
+    return DailyReport(profile, ctx.now, readings, syn, woven, routine, timing)

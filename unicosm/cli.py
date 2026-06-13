@@ -97,6 +97,7 @@ def cmd_today(a: argparse.Namespace) -> int:
     if not a.brief:
         print(render.layers(rep.readings))
     print(render.accents(rep.synthesis))
+    print(render.timing(rep.timing, rep.now))
     print(render.routine(rep.routine, show_empty=a.full_routine))
     print()
     return 0
@@ -198,12 +199,26 @@ def _report_json(rep) -> dict:
         ],
         "routine": [
             {"window": b.window.key, "label": b.window.label,
-             "time": b.time_label, "is_now": b.is_now,
+             "time": b.time_label, "is_now": b.is_now, "timing_note": b.timing_note,
              "habits": [{"id": sh.habit.id, "name": sh.habit.name,
                          "done": sh.done, "streak": sh.streak}
                         for sh in b.habits]}
             for b in rep.routine
         ],
+        "timing": _timing_json(rep.timing),
+    }
+
+
+def _timing_json(dt) -> dict | None:
+    if dt is None or dt.sunrise is None:
+        return None
+    return {
+        "sunrise": dt.sunrise.strftime("%H:%M"),
+        "sunset": dt.sunset.strftime("%H:%M"),
+        "abhijit": dt.abhijit.time_label,
+        "inauspicious": [{"label": b.label, "time": b.time_label} for b in dt.inauspicious],
+        "choghadiya": [{"label": b.label, "time": b.time_label, "quality": b.quality}
+                       for b in dt.all_choghadiya()],
     }
 
 

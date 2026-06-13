@@ -55,6 +55,7 @@ def synthesize(readings: list[SystemReading]) -> Synthesis:
     ph = r.get("planetary_hours")
     st = r.get("solar_term")
     prof = r.get("profections")
+    pt = r.get("panchang_timing")
 
     # Headline weaves the daily signature + lunar mood + personal-day intent.
     parts: list[str] = []
@@ -89,6 +90,9 @@ def synthesize(readings: list[SystemReading]) -> Synthesis:
     if prof:
         accents.append(f"Year's theme — keep {prof.detail['topic'].split(',')[0]} "
                        f"in view (Lord: {prof.detail['lord']}).")
+    if pt and pt.detail.get("inauspicious_now"):
+        accents.append(f"Timing — {pt.detail['inauspicious_now']} now; "
+                       f"hold big starts (Abhijit at {pt.detail.get('abhijit', '')}).")
 
     return Synthesis(
         headline=head,

@@ -82,6 +82,32 @@ def accents(syn: Synthesis) -> str:
     return "\n".join(out)
 
 
+def timing(dt, now) -> str:
+    """The day's auspicious / inauspicious time-bands."""
+    if dt is None or dt.sunrise is None:
+        return ""
+    out = [bold("\n  TODAY'S TIMING")]
+    out.append(f"  {dim('sun')} {dt.sunrise:%H:%M}–{dt.sunset:%H:%M}"
+               f"   {dim('Abhijit')} {dt.abhijit.time_label}")
+
+    cur = dt.current_choghadiya(now)
+    bad = dt.active_inauspicious(now)
+    if bad:
+        out.append(f"  {accent('now')} ⚠ {bad.label} until {bad.end:%H:%M} — {bad.note}")
+    elif cur:
+        glyph = {"good": "✓", "neutral": "·", "bad": "~"}[cur.quality]
+        out.append(f"  {accent('now')} {glyph} {cur.label} ({cur.note})")
+
+    good = [b for b in dt.good_windows() if b.end > now]
+    if good:
+        windows = "  ".join(f"{b.start:%H:%M} {b.label.split()[-1]}" for b in good[:4])
+        out.append(f"  {dim('favor ')} {windows}")
+    avoid = "  ".join(f"{b.start:%H:%M}–{b.end:%H:%M} {b.label.split()[0]}"
+                      for b in dt.inauspicious)
+    out.append(f"  {dim('avoid ')} {avoid}")
+    return "\n".join(out)
+
+
 def routine(blocks: list[RoutineBlock], show_empty: bool) -> str:
     out = [bold("\n  ROUTINE")]
     any_rows = False
@@ -95,6 +121,8 @@ def routine(blocks: list[RoutineBlock], show_empty: bool) -> str:
         title = b.window.label
         head = f"{marker} {dim(time)} {bold(title)}  {dim(b.window.note)}"
         out.append(head)
+        if b.timing_note:
+            out.append(f"        {dim(b.timing_note)}")
         for sh in b.habits:
             box = "☑" if sh.done else "☐"
             streak = dim(f"  🔥{sh.streak}") if sh.streak else ""

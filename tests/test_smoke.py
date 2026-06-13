@@ -189,6 +189,19 @@ class TestTiming(unittest.TestCase):
             self.assertTrue(dt.sunrise <= b.start < dt.sunset)
 
 
+class TestRoutineIntelligence(unittest.TestCase):
+    def test_report_has_timing_and_window_accents(self):
+        rep = daily_report(make_profile(),
+                           datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
+                           use_llm=False)
+        # timing is attached and populated
+        self.assertIsNotNone(rep.timing.sunrise)
+        self.assertEqual(len(rep.timing.all_choghadiya()), 16)
+        # at least one timed window carries a daily timing accent
+        notes = [b.timing_note for b in rep.routine if b.timing_note]
+        self.assertTrue(notes)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

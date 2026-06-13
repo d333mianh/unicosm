@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import random
 import sys
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from . import render, store
-from .core.timeutil import civil_date
+from .core.timeutil import civil_date, now_in
 from .engine import daily_report
 from .models import Profile
 from .routine.windows import WINDOWS
@@ -171,6 +173,43 @@ def cmd_check(a: argparse.Namespace) -> int:
     return 0
 
 
+def _draw_rng(name: str, system: str, daily: bool, seed: int | None,
+              tz: str) -> random.Random:
+    if seed is not None:
+        return random.Random(seed)
+    if daily:
+        key = f"{name}|{system}|{civil_date(now_in(tz))}"
+        return random.Random(int(hashlib.sha256(key.encode()).hexdigest(), 16))
+    return random.Random()
+
+
+def cmd_draw(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    name = p.name if p else "anon"
+    tz = p.cur_tz if p else "UTC"
+    rng = _draw_rng(name, a.system, a.daily, a.seed, tz)
+
+    text, summary = render.draw(a.system, rng, a.spread)
+    if a.question:
+        print(render.dim(f"  Q: {a.question}\n"))
+    print(text)
+    store.log_draw(name, a.system, summary, a.question)
+    return 0
+
+
+def cmd_draws(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    name = p.name if p else "anon"
+    rows = store.recent_draws(name, a.limit)
+    if not rows:
+        print("no draws yet. Try: unicosm draw iching")
+        return 0
+    for r in rows:
+        q = f"  — {render.dim(r['question'])}" if r["question"] else ""
+        print(f"  {render.dim(r['ts'][:16])}  {r['system']:<7} {r['summary']}{q}")
+    return 0
+
+
 def cmd_windows(a: argparse.Namespace) -> int:
     print("Day windows you can anchor habits to (--window KEY):\n")
     for w in WINDOWS:
@@ -284,6 +323,22 @@ def build_parser() -> argparse.ArgumentParser:
     pc.add_argument("--date", help="YYYY-MM-DD (default: today)")
     pc.add_argument("--profile")
     pc.set_defaults(func=cmd_check)
+
+    # draw (divination)
+    pd = sub.add_parser("draw", help="on-demand divination (I Ching, Tarot, Runes)")
+    pd.add_argument("system", choices=["iching", "tarot", "runes"])
+    pd.add_argument("--question", help="the question you're holding")
+    pd.add_argument("--daily", action="store_true", help="stable draw seeded by today's date")
+    pd.add_argument("--seed", type=int, help="fixed seed (reproducible)")
+    pd.add_argument("--spread", action="store_true",
+                    help="three-card/rune spread (tarot/runes)")
+    pd.add_argument("--profile")
+    pd.set_defaults(func=cmd_draw)
+
+    pdh = sub.add_parser("draws", help="recent divination history")
+    pdh.add_argument("--limit", type=int, default=10)
+    pdh.add_argument("--profile")
+    pdh.set_defaults(func=cmd_draws)
 
     # windows
     pw = sub.add_parser("windows", help="list day windows")

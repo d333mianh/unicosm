@@ -283,6 +283,26 @@ class TestTransits(unittest.TestCase):
         self.assertIn("active", r.detail)
 
 
+class TestIChing(unittest.TestCase):
+    def test_binary_map(self):
+        from unicosm.data.iching import BINARY_TO_NUMBER
+        self.assertEqual(len(set(BINARY_TO_NUMBER.values())), 64)
+        self.assertEqual(BINARY_TO_NUMBER["111111"], 1)
+        self.assertEqual(BINARY_TO_NUMBER["000000"], 2)
+        self.assertEqual(BINARY_TO_NUMBER["111000"], 11)   # Peace
+        self.assertEqual(BINARY_TO_NUMBER["101010"], 63)   # After Completion
+
+    def test_cast_deterministic(self):
+        import random
+        from unicosm.divination.iching import cast
+        a = cast(random.Random(7))
+        b = cast(random.Random(7))
+        self.assertEqual(a.primary, b.primary)
+        self.assertTrue(1 <= a.primary <= 64)
+        if a.changing_lines:
+            self.assertIsNotNone(a.relating)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(

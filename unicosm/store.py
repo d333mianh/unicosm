@@ -41,6 +41,15 @@ CREATE TABLE IF NOT EXISTS completion (
     ts       TEXT NOT NULL,       -- when logged
     UNIQUE(habit_id, day)
 );
+
+CREATE TABLE IF NOT EXISTS draw (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    profile  TEXT NOT NULL,
+    system   TEXT NOT NULL,       -- iching | tarot | runes
+    ts       TEXT NOT NULL,
+    summary  TEXT NOT NULL,
+    question TEXT
+);
 """
 
 
@@ -152,6 +161,24 @@ def completions_for_day(profile: str, day: str) -> set[int]:
             (profile, day),
         )
         return {r["habit_id"] for r in rows}
+
+
+def log_draw(profile: str, system: str, summary: str, question: str | None = None) -> None:
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO draw (profile, system, ts, summary, question) VALUES (?,?,?,?,?)",
+            (profile, system, datetime.now().isoformat(timespec="seconds"), summary, question),
+        )
+
+
+def recent_draws(profile: str, limit: int = 10) -> list[dict]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT system, ts, summary, question FROM draw WHERE profile = ? "
+            "ORDER BY id DESC LIMIT ?",
+            (profile, limit),
+        )
+        return [dict(r) for r in rows]
 
 
 def completion_days(habit_id: int) -> list[str]:

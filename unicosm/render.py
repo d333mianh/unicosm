@@ -132,6 +132,71 @@ def routine(blocks: list[RoutineBlock], show_empty: bool) -> str:
     return "\n".join(out)
 
 
+def draw(system: str, rng, spread: bool) -> tuple[str, str]:
+    """Return (rendered_text, one_line_summary) for a divination draw."""
+    if system == "iching":
+        return _draw_iching(rng)
+    if system == "tarot":
+        return _draw_tarot(rng, spread)
+    if system == "runes":
+        return _draw_runes(rng, spread)
+    return f"unknown system: {system}", system
+
+
+def _draw_iching(rng) -> tuple[str, str]:
+    from .divination.iching import cast
+    c = cast(rng)
+    glyph = chr(0x4DC0 + c.primary - 1)
+    out = [bold("\n  ☯ I Ching"), f"  {glyph}  {c.primary}. {c.primary_name}"]
+    for i in range(5, -1, -1):                 # top line first
+        v = c.lines[i]
+        yang = v in (7, 9)
+        bar = "▅▅▅▅▅▅▅" if yang else "▅▅▅   ▅▅▅"
+        mark = accent("  ✦") if v in (6, 9) else ""
+        out.append(f"      {bar}{mark}")
+    summary = f"{c.primary}. {c.primary_name}"
+    if c.relating:
+        rg = chr(0x4DC0 + c.relating - 1)
+        chg = ", ".join(map(str, c.changing_lines))
+        out.append(f"   {dim('→')} {rg}  {c.relating}. {c.relating_name}"
+                   f"  {dim(f'(changing lines {chg})')}")
+        summary += f" → {c.relating}. {c.relating_name}"
+    else:
+        out.append(dim("   (no changing lines — a stable answer)"))
+    return "\n".join(out), summary
+
+
+def _draw_tarot(rng, spread: bool) -> tuple[str, str]:
+    from .divination.tarot import draw_cards
+    cards = draw_cards(rng, 3 if spread else 1)
+    labels = ["Past", "Present", "Future"] if spread else ["Card"]
+    out = [bold("\n  🃏 Tarot")]
+    for label, card in zip(labels, cards):
+        orient = "reversed" if card.reversed else "upright"
+        kw = card.reversed_kw if card.reversed else card.upright_kw
+        out.append(f"  {accent(label)}: {bold(card.name)} ({orient}) — {kw}")
+    summary = "; ".join(
+        f"{c.name}{' (rev)' if c.reversed else ''}" for c in cards)
+    return "\n".join(out), summary
+
+
+def _draw_runes(rng, spread: bool) -> tuple[str, str]:
+    from .divination.runes import draw_runes
+    runes = draw_runes(rng, 3 if spread else 1)
+    labels = ["Situation", "Action", "Outcome"] if spread else ["Rune"]
+    out = [bold("\n  ᚱ Runes")]
+    for label, rune in zip(labels, runes):
+        if rune.merkstave:
+            out.append(f"  {accent(label)}: {bold(rune.name)} {rune.glyph} "
+                       f"(merkstave) — {rune.reversed_meaning}")
+        else:
+            out.append(f"  {accent(label)}: {bold(rune.name)} {rune.glyph} "
+                       f"— {rune.meaning}")
+    summary = "; ".join(
+        f"{r.name}{' (merk)' if r.merkstave else ''}" for r in runes)
+    return "\n".join(out), summary
+
+
 def _wrap(text: str, width: int) -> list[str]:
     words = text.split()
     lines: list[str] = []

@@ -240,6 +240,15 @@ class TestZodiacalReleasing(unittest.TestCase):
         self.assertEqual(_sign_years("Libra"), 8)        # Venus
 
 
+class TestPinnacles(unittest.TestCase):
+    def test_pinnacles_and_challenges(self):
+        from unicosm.systems.numerology import pinnacles
+        r = pinnacles(_ctx())
+        # 1990-03-21 -> m=3 d=3 y=1 -> pinnacles 6/4/1/4, challenges 0/2/2/2
+        self.assertEqual(r.detail["all_pinnacles"], [6, 4, 1, 4])
+        self.assertEqual(r.detail["all_challenges"], [0, 2, 2, 2])
+
+
 class TestReturns(unittest.TestCase):
     def test_solar_return_near_birthday(self):
         from unicosm.systems.returns import solar_return
@@ -282,7 +291,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 26)
+        self.assertGreaterEqual(len(rep.readings), 27)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

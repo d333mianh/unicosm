@@ -5,8 +5,21 @@ Fully algorithmic, the canonical 'birth date x today' system.
 
 from __future__ import annotations
 
+from ..core.timeutil import whole_years_since
 from ..models import Cadence, Layer, SystemReading
-from .base import digit_sum, reduce_number
+from .base import digit_sum, ordinal, reduce_number
+
+CHALLENGE_THEME = {
+    0: "balance every challenge — the power of conscious choice",
+    1: "stand in your own will without domination",
+    2: "cooperate without losing yourself to oversensitivity",
+    3: "express freely past self-criticism",
+    4: "build discipline without rigidity",
+    5: "use freedom without recklessness",
+    6: "serve responsibly without martyrdom",
+    7: "stay open and trusting rather than isolated",
+    8: "hold power and money in right relationship",
+}
 
 MEANING = {
     1: ("initiation", ["lead", "begin", "act"]),
@@ -59,6 +72,48 @@ def personal_year(ctx) -> SystemReading:
         layer=Layer.PERSONAL,
         summary=f"Personal Year {py} — a year of {theme}.",
         detail={"personal_year": py, "theme": theme},
+        keywords=kw,
+    )
+
+
+def pinnacles(ctx) -> SystemReading:
+    """Four life-stage pinnacles + challenges, with the current one by age."""
+    b = ctx.profile.birth_dt
+    m = reduce_number(_digits(b.month), keep_master=False)
+    d = reduce_number(_digits(b.day), keep_master=False)
+    y = reduce_number(_digits(b.year), keep_master=False)
+    lp = reduce_number(_digits(b.year, b.month, b.day), keep_master=False)
+
+    p1 = reduce_number(m + d)
+    p2 = reduce_number(d + y)
+    p3 = reduce_number(reduce_number(p1, keep_master=False)
+                       + reduce_number(p2, keep_master=False))
+    p4 = reduce_number(m + y)
+    pins = [p1, p2, p3, p4]
+    chals = [abs(m - d), abs(d - y), abs(abs(m - d) - abs(d - y)), abs(m - y)]
+
+    end1 = 36 - lp
+    bounds = [(0, end1), (end1 + 1, end1 + 9), (end1 + 10, end1 + 18),
+              (end1 + 19, 120)]
+    age = whole_years_since(b, ctx.now)
+    idx = next((i for i, (lo, hi) in enumerate(bounds) if lo <= age <= hi), 3)
+
+    pin, chal = pins[idx], chals[idx]
+    theme, kw = MEANING[pin]
+    lo, hi = bounds[idx]
+    span = f"ages {lo}–{hi}" if idx < 3 else f"ages {lo}+"
+    return SystemReading(
+        key="numerology_pinnacles",
+        title="Numerology pinnacle",
+        cadence=Cadence.DECADE,
+        layer=Layer.PERSONAL,
+        summary=(
+            f"{ordinal(idx + 1)} Pinnacle {pin} ({theme}), {span} — "
+            f"with Challenge {chal}: {CHALLENGE_THEME[chal]}."
+        ),
+        detail={"pinnacle": pin, "pinnacle_theme": theme, "challenge": chal,
+                "challenge_theme": CHALLENGE_THEME[chal], "span": span,
+                "all_pinnacles": pins, "all_challenges": chals},
         keywords=kw,
     )
 

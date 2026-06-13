@@ -37,13 +37,13 @@ deepening the reading and strengthening the routine.
 - **B2** Daily transits to natal (incl. outer planets), applying/separating.
 - **B3** Secondary progressions + progressed-Moon lunation cycle.
 
-## Phase C — Complete the personal time-lords  ← NEXT
+## ✅ Phase C — Personal time-lords  (done)
 
-- **C1** Zodiacal Releasing (from the Lots) — Hellenistic time-lords to daily.
-- **C2** Solar & lunar return charts (annual / monthly).
-- **C3** Numerology pinnacles & challenges; firdaria (Persian periods).
+- **C1** Zodiacal Releasing from the Lot of Spirit (L1 years / L2 months).
+- **C2** Solar & lunar return charts (year / lunar-month keynote).
+- **C3** Numerology pinnacles & challenges (current stage by age).
 
-## Phase D — On-demand divination (`unicosm draw`)
+## Phase D — On-demand divination (`unicosm draw`)  ← NEXT
 
 *Fills the empty 4th functional layer; new command + draw history.*
 

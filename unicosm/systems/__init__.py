@@ -57,6 +57,7 @@ REGISTRY = [
     vimshottari.mahadasha,
     zodiacal_releasing.reading,
     progressions.reading,
+    numerology.pinnacles,
     astro_age.reading,
 ]
 

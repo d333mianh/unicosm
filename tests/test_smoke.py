@@ -114,6 +114,35 @@ class TestHumanDesign(unittest.TestCase):
             self.assertEqual(len(SPECTRUM[g]), 3)
 
 
+class TestVimshottari(unittest.TestCase):
+    def test_lords_sum_120(self):
+        from unicosm.data.vimshottari import YEARS
+        self.assertEqual(sum(YEARS.values()), 120)
+
+    def test_nakshatra_ruler_mapping(self):
+        from unicosm.data.vimshottari import LORDS, NAKSHATRAS
+        self.assertEqual(len(NAKSHATRAS), 27)
+        # Ashwini -> Ketu, Uttara Ashadha (index 20) -> Sun
+        self.assertEqual(LORDS[NAKSHATRAS.index("Ashwini") % 9], "Ketu")
+        self.assertEqual(LORDS[NAKSHATRAS.index("Uttara Ashadha") % 9], "Sun")
+
+    def test_period_nesting_contains_now(self):
+        from unicosm.core import ephem
+        from unicosm.systems.vimshottari import compute
+        bjd = ephem.jd_ut(datetime(1990, 3, 21, 14, 30, tzinfo=ZoneInfo("Europe/Kyiv")))
+        njd = ephem.jd_ut(datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")))
+        c = compute(bjd, njd)
+        maha, antar, praty = c["maha"], c["antar"], c["praty"]
+        # each active period contains 'now' and nests inside its parent
+        self.assertTrue(maha.start_jd <= njd < maha.end_jd)
+        self.assertTrue(antar.start_jd <= njd < antar.end_jd)
+        self.assertTrue(praty.start_jd <= njd < praty.end_jd)
+        self.assertGreaterEqual(antar.start_jd, maha.start_jd - 1e-6)
+        self.assertLessEqual(antar.end_jd, maha.end_jd + 1e-6)
+        self.assertGreaterEqual(praty.start_jd, antar.start_jd - 1e-6)
+        self.assertLessEqual(praty.end_jd, antar.end_jd + 1e-6)
+
+
 class TestDailyReport(unittest.TestCase):
     def test_full_report(self):
         rep = daily_report(
@@ -121,8 +150,8 @@ class TestDailyReport(unittest.TestCase):
             datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
             use_llm=False,
         )
-        # every cadence layer represented (>= 15 systems now)
-        self.assertGreaterEqual(len(rep.readings), 15)
+        # every cadence layer represented (>= 18 systems now)
+        self.assertGreaterEqual(len(rep.readings), 18)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

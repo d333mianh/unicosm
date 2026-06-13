@@ -98,21 +98,21 @@ module, append it to `systems/REGISTRY`. That is the seam the project grows on.
 
 | Cadence | System(s) |
 |---|---|
-| Blueprint | Western natal (Sun/Moon/Asc), **Human Design** (type/authority/profile/centers/channels), **Gene Keys** (Activation Sequence), Life Path number |
+| Blueprint | Western natal (Sun/Moon/Asc), **Human Design** (type/authority/profile/centers/channels), **Gene Keys** (Activation Sequence), **Janma nakshatra**, Life Path number |
 | This hour | Planetary hours, TCM organ clock |
 | Today | Sexagenary day pillar (60 jiazi), Personal Day number, HD transit Sun-gate |
 | This lunar month | Lunar phase (8-phase) |
 | This season | 24 solar terms (jieqi) |
-| This year | Annual profections, Personal Year |
-| This chapter | Jupiter cycle (~12 yr) |
+| This year | Annual profections, Personal Year, **Vimshottari antardasha** (+ pratyantar) |
+| This chapter | Jupiter cycle (~12 yr), **Vimshottari mahadasha** |
 | This era | Astrological age (Lahiri) |
 
 ## Roadmap (next steps, from the catalog)
 
-1. ~~Human Design + Gene Keys~~ ✅ done (type/authority/profile/centers/channels,
-   Activation Sequence, daily transit gate).
-2. **Deepen the headline systems** — full natal aspects/houses; Vimshottari
-   Dasha and Zodiacal Releasing (the deepest personal-cycle engines).
+1. ~~Human Design + Gene Keys~~ ✅ done.
+2. ~~Vimshottari Dasha~~ ✅ done (maha/antar/pratyantar + janma nakshatra). Next
+   in this track: Zodiacal Releasing, full natal aspects/houses, and Panchang
+   (the nakshatra computation is already in place).
 3. **On-demand divination** — I Ching, Tarot, Runes (`unicosm draw`).
 4. **More cosmic weather** — full Panchang, Tong Shu, biodynamic/Maria Thun.
 5. **Routine intelligence** — per-window cosmic accents, reminders (OS
@@ -131,6 +131,9 @@ module, append it to `systems/REGISTRY`. That is the seam the project grows on.
   the **true** lunar node, and the Design point at exactly 88° of solar arc
   before birth. Gene Key number = HD gate number. Worth spot-checking a chart or
   two against a reference calculator (e.g. Jovian Archive) before relying on it.
+- Vimshottari Dasha uses the Lahiri ayanamsa for the Moon's nakshatra and a
+  365.25-day year; dasha start dates can differ by a few days between software
+  using different year-lengths/ayanamsas.
 
 ```bash
 .venv/bin/python -m unittest discover -s tests   # run the tests

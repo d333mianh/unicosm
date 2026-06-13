@@ -21,6 +21,7 @@ from . import (
     sexagenary,
     solar_term,
     tcm_organ,
+    vimshottari,
     western_natal,
 )
 
@@ -29,6 +30,7 @@ REGISTRY = [
     western_natal.reading,
     human_design.reading,
     gene_keys.reading,
+    vimshottari.janma_nakshatra,
     numerology.life_path,
     planetary_hours.reading,
     tcm_organ.reading,
@@ -39,7 +41,9 @@ REGISTRY = [
     solar_term.reading,
     profections.reading,
     numerology.personal_year,
+    vimshottari.antardasha,
     jupiter_cycle.reading,
+    vimshottari.mahadasha,
     astro_age.reading,
 ]
 

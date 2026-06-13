@@ -68,6 +68,29 @@ class TestEphem(unittest.TestCase):
         self.assertEqual(ephem.PHASE_NAMES[4], "Full Moon")
 
 
+class TestAstrology(unittest.TestCase):
+    def test_dignities(self):
+        from unicosm.core import astro
+        self.assertEqual(astro.dignity("Sun", 5.0), "exaltation")    # Aries
+        self.assertEqual(astro.dignity("Mars", 5.0), "domicile")     # Aries
+        self.assertEqual(astro.dignity("Saturn", 295.0), "domicile")  # Capricorn
+        self.assertEqual(astro.dignity("Moon", 295.0), "detriment")   # Capricorn
+        self.assertEqual(astro.dignity("Venus", 5.0), "detriment")    # Aries (rules Libra)
+        self.assertIsNone(astro.dignity("Mercury", 5.0))             # Aries: peregrine
+
+    def test_aspects(self):
+        from unicosm.core import astro
+        self.assertEqual(astro.aspect_between(0, 90)[0], "square")
+        self.assertEqual(astro.aspect_between(0, 120)[0], "trine")
+        self.assertEqual(astro.aspect_between(10, 14)[0], "conjunction")
+        self.assertIsNone(astro.aspect_between(0, 45))
+
+    def test_house_of(self):
+        ctx = _ctx()
+        # Sun at 0° Aries falls in the 9th house for this chart (verified)
+        self.assertEqual(ctx.natal.house_of(ctx.natal.planets["Sun"]), 9)
+
+
 class TestStreak(unittest.TestCase):
     def test_consecutive(self):
         from unicosm.routine.tracker import current_streak
@@ -210,7 +233,7 @@ class TestDailyReport(unittest.TestCase):
             use_llm=False,
         )
         # every cadence layer represented (>= 18 systems now)
-        self.assertGreaterEqual(len(rep.readings), 20)
+        self.assertGreaterEqual(len(rep.readings), 21)
         cadences = {r.cadence.value for r in rep.readings}
         for expected in ("hourly", "daily", "lunar_month", "season",
                          "year", "decade", "era", "blueprint"):

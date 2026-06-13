@@ -67,6 +67,12 @@ def ascendant(jd: float, lat: float, lon: float) -> float:
     return ascmc[0] % 360.0
 
 
+def houses(jd: float, lat: float, lon: float) -> tuple[tuple[float, ...], float, float]:
+    """(12 house cusps, Ascendant, Midheaven), all tropical degrees. Placidus."""
+    cusps, ascmc = swe.houses(jd, lat, lon, b"P")
+    return tuple(c % 360.0 for c in cusps[:12]), ascmc[0] % 360.0, ascmc[1] % 360.0
+
+
 def ayanamsa(jd: float) -> float:
     swe.set_sid_mode(swe.SIDM_LAHIRI)
     return swe.get_ayanamsa_ut(jd)

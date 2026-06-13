@@ -19,18 +19,36 @@ class NatalChart:
     planets: dict[str, float]   # name -> ecliptic longitude
     asc: float
     jd: float
+    cusps: tuple[float, ...] = ()   # 12 house cusps (Placidus)
+    mc: float = 0.0                 # Midheaven
 
     def sign(self, body: str) -> str:
         if body == "Asc":
             return ephem.sign_name(self.asc)
+        if body == "MC":
+            return ephem.sign_name(self.mc)
         return ephem.sign_name(self.planets[body])
+
+    def house_of(self, lon: float) -> int:
+        """House (1-12) containing the given longitude, by the natal cusps."""
+        if not self.cusps:
+            return 0
+        ring = list(self.cusps) + [self.cusps[0]]
+        for i in range(12):
+            a, b = ring[i], ring[i + 1]
+            if a <= b:
+                if a <= lon < b:
+                    return i + 1
+            elif lon >= a or lon < b:   # cusp wraps past 360°
+                return i + 1
+        return 12
 
 
 def compute_natal(p: Profile) -> NatalChart:
     jd = ephem.jd_ut(p.birth_dt)
     planets = {name: ephem.planet_lon(jd, ipl)[0] for name, ipl in ephem.PLANETS.items()}
-    asc = ephem.ascendant(jd, p.birth_lat, p.birth_lon)
-    return NatalChart(planets=planets, asc=asc, jd=jd)
+    cusps, asc, mc = ephem.houses(jd, p.birth_lat, p.birth_lon)
+    return NatalChart(planets=planets, asc=asc, jd=jd, cusps=cusps, mc=mc)
 
 
 @dataclass

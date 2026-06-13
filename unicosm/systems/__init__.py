@@ -29,6 +29,7 @@ from . import (
 # Order is loosely fastest-cadence-first; synthesis re-groups by cadence anyway.
 REGISTRY = [
     western_natal.reading,
+    western_natal.aspects,
     human_design.reading,
     gene_keys.reading,
     vimshottari.janma_nakshatra,

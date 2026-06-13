@@ -50,6 +50,18 @@ CREATE TABLE IF NOT EXISTS draw (
     summary  TEXT NOT NULL,
     question TEXT
 );
+
+CREATE TABLE IF NOT EXISTS checkin (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    profile  TEXT NOT NULL,
+    day      TEXT NOT NULL,       -- local civil date
+    ts       TEXT NOT NULL,
+    mood     INTEGER,             -- 1..5
+    energy   INTEGER,             -- 1..5
+    note     TEXT,
+    snapshot TEXT,                -- the day's cosmic-state headline/weather
+    UNIQUE(profile, day)
+);
 """
 
 
@@ -176,6 +188,30 @@ def recent_draws(profile: str, limit: int = 10) -> list[dict]:
         rows = conn.execute(
             "SELECT system, ts, summary, question FROM draw WHERE profile = ? "
             "ORDER BY id DESC LIMIT ?",
+            (profile, limit),
+        )
+        return [dict(r) for r in rows]
+
+
+def save_checkin(profile: str, day: str, mood: int | None, energy: int | None,
+                 note: str | None, snapshot: str | None) -> None:
+    with connect() as conn:
+        conn.execute(
+            """INSERT INTO checkin (profile, day, ts, mood, energy, note, snapshot)
+               VALUES (?,?,?,?,?,?,?)
+               ON CONFLICT(profile, day) DO UPDATE SET
+                 ts=excluded.ts, mood=excluded.mood, energy=excluded.energy,
+                 note=excluded.note, snapshot=excluded.snapshot""",
+            (profile, day, datetime.now().isoformat(timespec="seconds"),
+             mood, energy, note, snapshot),
+        )
+
+
+def recent_checkins(profile: str, limit: int = 14) -> list[dict]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT day, mood, energy, note, snapshot FROM checkin "
+            "WHERE profile = ? ORDER BY day DESC LIMIT ?",
             (profile, limit),
         )
         return [dict(r) for r in rows]

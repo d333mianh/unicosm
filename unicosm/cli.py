@@ -210,6 +210,50 @@ def cmd_draws(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_checkin(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    when = _parse_when(p, a.date, None) or now_in(p.cur_tz)
+    day = civil_date(when)
+    # capture the day's cosmic-state snapshot
+    rep = daily_report(p, when, use_llm=False)
+    snapshot = f"{rep.synthesis.weather} | {rep.synthesis.headline}"
+    if a.mood is not None and not (1 <= a.mood <= 5):
+        return _err("--mood must be 1..5")
+    if a.energy is not None and not (1 <= a.energy <= 5):
+        return _err("--energy must be 1..5")
+    store.save_checkin(p.name, day, a.mood, a.energy, a.note, snapshot)
+    print(f"✓ checked in for {day}"
+          + (f" · mood {a.mood}/5" if a.mood else "")
+          + (f" · energy {a.energy}/5" if a.energy else ""))
+    print(render.dim(f"  state: {snapshot}"))
+    return 0
+
+
+def cmd_history(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    rows = store.recent_checkins(p.name, a.limit)
+    if not rows:
+        print("no check-ins yet. Try: unicosm checkin --mood 4 --energy 3 \"a note\"")
+        return 0
+    for r in rows:
+        me = []
+        if r["mood"]:
+            me.append(f"mood {r['mood']}/5")
+        if r["energy"]:
+            me.append(f"energy {r['energy']}/5")
+        meta = ("  " + ", ".join(me)) if me else ""
+        print(f"  {render.bold(r['day'])}{render.dim(meta)}")
+        if r["note"]:
+            print(f"    {r['note']}")
+        if r["snapshot"]:
+            print(render.dim(f"    ↳ {r['snapshot']}"))
+    return 0
+
+
 def cmd_windows(a: argparse.Namespace) -> int:
     print("Day windows you can anchor habits to (--window KEY):\n")
     for w in WINDOWS:
@@ -342,6 +386,20 @@ def build_parser() -> argparse.ArgumentParser:
     pdh.add_argument("--limit", type=int, default=10)
     pdh.add_argument("--profile")
     pdh.set_defaults(func=cmd_draws)
+
+    # checkin / history
+    pci = sub.add_parser("checkin", help="log today's mood/energy + a note")
+    pci.add_argument("note", nargs="?", help="free-text reflection")
+    pci.add_argument("--mood", type=int, help="1..5")
+    pci.add_argument("--energy", type=int, help="1..5")
+    pci.add_argument("--date", help="YYYY-MM-DD (default: today)")
+    pci.add_argument("--profile")
+    pci.set_defaults(func=cmd_checkin)
+
+    phi = sub.add_parser("history", help="recent check-ins with that day's state")
+    phi.add_argument("--limit", type=int, default=14)
+    phi.add_argument("--profile")
+    phi.set_defaults(func=cmd_history)
 
     # windows
     pw = sub.add_parser("windows", help="list day windows")

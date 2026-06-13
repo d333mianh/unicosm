@@ -374,6 +374,17 @@ class TestSky(unittest.TestCase):
                       {"Root day", "Leaf day", "Flower day", "Fruit/Seed day"})
 
 
+class TestCheckin(unittest.TestCase):
+    def test_roundtrip_and_upsert(self):
+        from unicosm import store
+        store.save_checkin("CheckUser", "2026-06-13", 4, 3, "ok", "snap1")
+        store.save_checkin("CheckUser", "2026-06-13", 5, 5, "better", "snap2")  # upsert
+        rows = store.recent_checkins("CheckUser")
+        self.assertEqual(len(rows), 1)            # same day -> one row
+        self.assertEqual(rows[0]["mood"], 5)
+        self.assertEqual(rows[0]["snapshot"], "snap2")
+
+
 class TestSynthesis(unittest.TestCase):
     def _r(self, key, cad, kws, score=None):
         from unicosm.models import Cadence, Layer, SystemReading

@@ -365,6 +365,48 @@ def cmd_remind(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_obsidian(a: argparse.Namespace) -> int:
+    import os
+    from pathlib import Path
+
+    from . import markdown
+
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    when = _parse_when(p, a.date, a.time)
+    rep = daily_report(p, when, use_llm=a.llm)
+    block = markdown.block(rep)
+    day = civil_date(rep.now)
+
+    vault = a.vault or os.environ.get("UNICOSM_OBSIDIAN_VAULT")
+    if not vault:
+        # no vault configured -> print markdown for piping/copying
+        print(markdown.frontmatter(rep) + "\n" + block if a.frontmatter else block)
+        return 0
+
+    folder = a.folder if a.folder is not None else os.environ.get("UNICOSM_OBSIDIAN_FOLDER", "")
+    path = Path(vault).expanduser() / folder / f"{day}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        text = path.read_text(encoding="utf-8")
+        if markdown.MARK_START in text and markdown.MARK_END in text:
+            pre = text.split(markdown.MARK_START)[0]
+            post = text.split(markdown.MARK_END, 1)[1]
+            text = pre + block + post
+        else:
+            text = text.rstrip() + "\n\n" + block
+        action = "updated"
+    else:
+        fm = markdown.frontmatter(rep) + "\n" if a.frontmatter else ""
+        text = fm + block
+        action = "created"
+    path.write_text(text, encoding="utf-8")
+    print(f"{action} {path}")
+    return 0
+
+
 def cmd_notify(a: argparse.Namespace) -> int:
     p = _resolve_profile(a.profile)
     if not p:
@@ -549,6 +591,18 @@ def build_parser() -> argparse.ArgumentParser:
     phi.add_argument("--limit", type=int, default=14)
     phi.add_argument("--profile")
     phi.set_defaults(func=cmd_history)
+
+    # obsidian / markdown export
+    pob = sub.add_parser("obsidian", help="write today's reading as Obsidian markdown")
+    pob.add_argument("--vault", help="path to your Obsidian vault (or $UNICOSM_OBSIDIAN_VAULT)")
+    pob.add_argument("--folder", help="daily-notes subfolder (or $UNICOSM_OBSIDIAN_FOLDER)")
+    pob.add_argument("--date", help="YYYY-MM-DD (default: today)")
+    pob.add_argument("--time", help="HH:MM (default: now)")
+    pob.add_argument("--llm", action="store_true", help="include the LLM woven reading")
+    pob.add_argument("--no-frontmatter", dest="frontmatter", action="store_false",
+                     help="don't add YAML frontmatter on new notes")
+    pob.add_argument("--profile")
+    pob.set_defaults(func=cmd_obsidian, frontmatter=True)
 
     # notify
     pnt = sub.add_parser("notify", help="send today's summary as an OS notification")

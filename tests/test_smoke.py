@@ -481,6 +481,20 @@ class TestLLM(unittest.TestCase):
         self.assertEqual(llm.enhance(rds, base), "woven.")  # cache hit
 
 
+class TestMarkdown(unittest.TestCase):
+    def test_block_and_frontmatter(self):
+        from unicosm import markdown
+        rep = daily_report(make_profile(),
+                           datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
+                           use_llm=False)
+        blk = markdown.block(rep)
+        self.assertIn(markdown.MARK_START, blk)
+        self.assertIn(markdown.MARK_END, blk)
+        self.assertIn("## ☉ Unicosm", blk)
+        self.assertIn("### Layers", blk)
+        self.assertIn("date: 2026-06-13", markdown.frontmatter(rep))
+
+
 class TestNotify(unittest.TestCase):
     def test_build_message(self):
         from unicosm.notify import build_message

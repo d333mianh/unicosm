@@ -365,6 +365,25 @@ def cmd_remind(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_notify(a: argparse.Namespace) -> int:
+    p = _resolve_profile(a.profile)
+    if not p:
+        return _err("no profile yet.")
+    if a.cron:
+        print("# add to your crontab (crontab -e) for a daily morning push:")
+        print(f"0 7 * * *  unicosm notify --profile {p.name}")
+        return 0
+    from . import notify
+    rep = daily_report(p, None, use_llm=a.llm)
+    title, body = notify.build_message(rep)
+    if notify.dispatch(title, body):
+        print(f"sent notification: {title}")
+    else:
+        print(render.dim("(no OS notifier found — printing instead)"))
+        print(f"{render.bold(title)}\n{body}")
+    return 0
+
+
 def cmd_windows(a: argparse.Namespace) -> int:
     print("Day windows you can anchor habits to (--window KEY):\n")
     for w in WINDOWS:
@@ -530,6 +549,13 @@ def build_parser() -> argparse.ArgumentParser:
     phi.add_argument("--limit", type=int, default=14)
     phi.add_argument("--profile")
     phi.set_defaults(func=cmd_history)
+
+    # notify
+    pnt = sub.add_parser("notify", help="send today's summary as an OS notification")
+    pnt.add_argument("--cron", action="store_true", help="print a crontab line only")
+    pnt.add_argument("--llm", action="store_true", help="include the LLM reading")
+    pnt.add_argument("--profile")
+    pnt.set_defaults(func=cmd_notify)
 
     # remind
     prm = sub.add_parser("remind", help="today's reminder times + crontab helper")

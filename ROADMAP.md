@@ -79,10 +79,13 @@ deepening the reading and strengthening the routine.
 - **H3** i18n catalog framework + Ukrainian demo (chrome partial).
 - **H4** Profile `use`/`rm` + `compare` (synastry-lite cross-aspects).
 
-## Phase I — Beyond the CLI (later, optional)
+## Phase I — Daily use & beyond the CLI  (in progress)
 
-- Extract the engine as a reusable library/API; a web or TUI front-end; daily
-  push notifications.
+- ✅ **I1** Tuned LLM narrative surfaced as its own ✺ READING block (caching,
+  temperature, accent-grounded suggestion).
+- ✅ **I2** `unicosm notify` — concise morning push via the OS notifier
+  (+ `--cron` for a daily job).
+- **I3** (next) Extract the engine as a library/API; a web or TUI front-end.
 
 ---
 

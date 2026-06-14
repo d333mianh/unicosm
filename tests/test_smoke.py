@@ -481,6 +481,17 @@ class TestLLM(unittest.TestCase):
         self.assertEqual(llm.enhance(rds, base), "woven.")  # cache hit
 
 
+class TestNotify(unittest.TestCase):
+    def test_build_message(self):
+        from unicosm.notify import build_message
+        rep = daily_report(make_profile(),
+                           datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv")),
+                           use_llm=False)
+        title, body = build_message(rep)
+        self.assertTrue(title.startswith("☉ Unicosm"))
+        self.assertIn(rep.synthesis.headline, body)
+
+
 class TestGolden(unittest.TestCase):
     """Pin verified cross-system outputs for the canonical chart so future
     changes that shift results are caught."""

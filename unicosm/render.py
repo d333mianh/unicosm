@@ -41,7 +41,7 @@ def header(profile, now) -> str:
     return f"{line1}\n  {line2}\n  {line3}"
 
 
-def cosmic_state(syn: Synthesis, woven: str | None) -> str:
+def cosmic_state(syn: Synthesis) -> str:
     out = [bold("\n  " + t("COSMIC STATE") + "  ") + dim(f"({syn.weather})")]
     out.append(f"  {syn.headline}")
     if syn.keywords:
@@ -50,10 +50,16 @@ def cosmic_state(syn: Synthesis, woven: str | None) -> str:
         out.append(f"  {accent('↻')} {res}")
     for tension in syn.tensions:
         out.append(f"  {accent('⚖')} {tension}")
-    if woven:
-        out.append("")
-        for line in _wrap(woven, 76):
-            out.append(f"  {line}")
+    return "\n".join(out)
+
+
+def woven(text: str | None) -> str:
+    """The LLM-woven prose reading, as its own block."""
+    if not text:
+        return ""
+    out = [bold("\n  ✺ " + t("READING"))]
+    for line in _wrap(text, 76):
+        out.append(f"  {line}")
     return "\n".join(out)
 
 

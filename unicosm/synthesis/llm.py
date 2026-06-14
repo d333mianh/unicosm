@@ -19,18 +19,24 @@ from .weave import Synthesis
 
 DEFAULT_MODEL = os.environ.get("UNICOSM_LLM_MODEL", "claude-opus-4-8")
 MAX_TOKENS = int(os.environ.get("UNICOSM_LLM_MAX_TOKENS", "600"))
+TEMPERATURE = float(os.environ.get("UNICOSM_LLM_TEMPERATURE", "0.7"))
 
 _SYSTEM = (
     "You are the synthesis voice of Unicosm. You receive structured readings from "
     "many complementary guidance traditions, each mapped to a cadence (hourly, "
     "daily, lunar month, season, year, decade, era), plus pre-computed resonances "
-    "(themes several systems echo) and tensions (where the day both supports and "
-    "cautions). Weave them into ONE short, grounded, second-person reading (max "
-    "~180 words). Lead with what the traditions agree on (the resonances). Treat "
-    "the systems as complementary lenses, never contradictory; when a tension "
-    "exists, hold both sides honestly. Don't invent facts beyond the data. End "
-    "with one concrete suggestion for today. Avoid fatalism; keep agency with the "
-    "reader."
+    "(themes several systems echo), tensions (where the day both supports and "
+    "cautions), per-cadence favorability, and concrete 'accents' already derived "
+    "for today.\n\n"
+    "Weave them into ONE short, grounded, second-person reading (max ~180 words). "
+    "Open with the resonance — what the traditions independently agree on — since "
+    "that's the strongest signal. Move from the slow, fixed layers (who you are, "
+    "the long chapter) inward to today and this hour. Treat the systems as "
+    "complementary lenses, never contradictory; when a tension exists, name both "
+    "sides and let the reader hold them. Never invent facts beyond the data; you "
+    "may name a system in passing but don't list them mechanically. End with ONE "
+    "concrete, doable suggestion for today, drawn from the accents. Warm, plain, "
+    "non-fatalistic; the reader keeps all agency."
 )
 
 
@@ -40,6 +46,7 @@ def _payload(readings: list[SystemReading], base: Synthesis) -> dict:
         "resonances": base.resonances,
         "tensions": base.tensions,
         "cadence_weather": base.cadence_weather,
+        "accents_today": base.accents,
         "readings": [
             {"cadence": r.cadence.value, "title": r.title,
              "summary": r.summary, "keywords": r.keywords}
@@ -75,6 +82,7 @@ def enhance(readings: list[SystemReading], base: Synthesis) -> str | None:
         msg = client.messages.create(
             model=DEFAULT_MODEL,
             max_tokens=MAX_TOKENS,
+            temperature=TEMPERATURE,
             system=_SYSTEM,
             messages=[{"role": "user",
                        "content": json.dumps(payload, ensure_ascii=False)}],

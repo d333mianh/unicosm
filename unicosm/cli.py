@@ -149,7 +149,8 @@ def cmd_today(a: argparse.Namespace) -> int:
         return 0
 
     print(render.header(p, rep.now))
-    print(render.cosmic_state(rep.synthesis, rep.woven))
+    print(render.cosmic_state(rep.synthesis))
+    print(render.woven(rep.woven))
     if not a.brief:
         print(render.layers(rep.readings))
     print(render.accents(rep.synthesis))

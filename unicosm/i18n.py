@@ -17,6 +17,7 @@ CATALOGS: dict[str, dict[str, str]] = {
     "uk": {
         # section headers
         "COSMIC STATE": "КОСМІЧНИЙ СТАН",
+        "READING": "ЧИТАННЯ",
         "LAYERS": "ШАРИ",
         "ACCENTS FOR TODAY": "АКЦЕНТИ НА СЬОГОДНІ",
         "TODAY'S TIMING": "ТАЙМІНГ ДНЯ",

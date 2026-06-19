@@ -641,6 +641,24 @@ class TestTelegram(unittest.TestCase):
         with self.assertRaises(TelegramError):
             TelegramClient("")
 
+    def test_api_wraps_network_timeout(self):
+        # A long-poll read timeout must surface as TelegramError (retryable),
+        # never escape as a raw TimeoutError that would crash the bot loop.
+        import urllib.request
+
+        from unicosm.telegram.api import TelegramClient, TelegramError
+
+        def boom(*_a, **_k):
+            raise TimeoutError("The read operation timed out")
+
+        orig = urllib.request.urlopen
+        urllib.request.urlopen = boom
+        try:
+            with self.assertRaises(TelegramError):
+                TelegramClient("123:abc").get_updates(timeout=0)
+        finally:
+            urllib.request.urlopen = orig
+
 
 if __name__ == "__main__":
     unittest.main()

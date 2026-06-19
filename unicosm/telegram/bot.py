@@ -111,9 +111,11 @@ def send_daily(token: str, chat_id, *, profile_name: str | None = None,
 
 
 def run(token: str, *, profile_name: str | None = None, use_llm: bool = False,
-        poll_timeout: int = 30, client: TelegramClient | None = None) -> None:
+        poll_timeout: int = 25, client: TelegramClient | None = None) -> None:
     """Long-poll for messages and answer them. Blocks until interrupted."""
-    client = client or TelegramClient(token, timeout=poll_timeout + 5)
+    # Socket budget comfortably exceeds the long-poll so an idle, empty response
+    # arrives before the read times out.
+    client = client or TelegramClient(token, timeout=poll_timeout + 15)
     me = client.get_me()
     log.info("bot @%s online — polling for messages", me.get("username"))
     offset: int | None = None
@@ -121,8 +123,9 @@ def run(token: str, *, profile_name: str | None = None, use_llm: bool = False,
         try:
             updates = client.get_updates(offset=offset, timeout=poll_timeout)
         except TelegramError as exc:
-            log.warning("getUpdates failed: %s", exc)
-            time.sleep(3)
+            # Transient (timeout / network blip) — keep polling, don't die.
+            log.warning("getUpdates failed: %s — retrying", exc)
+            time.sleep(2)
             continue
         for u in updates:
             offset = u["update_id"] + 1

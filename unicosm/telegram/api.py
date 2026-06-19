@@ -47,6 +47,10 @@ class TelegramClient:
             raise TelegramError(f"{method} failed: {desc}") from exc
         except urllib.error.URLError as exc:
             raise TelegramError(f"network error calling {method}: {exc.reason}") from exc
+        except (TimeoutError, OSError) as exc:
+            # A long-poll read timing out is a builtin TimeoutError (OSError),
+            # not a URLError; wrap it so callers can retry instead of crashing.
+            raise TelegramError(f"network error calling {method}: {exc}") from exc
         if not payload.get("ok"):
             raise TelegramError(f"{method} failed: {payload.get('description')}")
         return payload["result"]

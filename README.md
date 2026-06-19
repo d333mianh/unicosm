@@ -80,6 +80,31 @@ unicosm draws                 # divination history
 Data lives in `~/.unicosm/unicosm.sqlite3` (override with `$UNICOSM_HOME`).
 Set `UNICOSM_LOCALE=uk` for a (partial) Ukrainian interface.
 
+### Optional: Telegram bot
+
+Get your day in a chat, and read *other people's* days by sending birth data.
+Create a bot with [@BotFather](https://t.me/BotFather), then:
+
+```bash
+export UNICOSM_TELEGRAM_TOKEN=123456:ABC...      # from @BotFather
+
+# interactive — answers /today, /blueprint, and /analyze
+unicosm telegram run
+#   /today                              your full woven reading
+#   /blueprint                          your fixed birth signature
+#   /analyze 1991-07-08 09:15 London    another person's day (nothing saved)
+#   1990-03-21 14:30 Kyiv               bare birth data also works
+
+# daily push (for cron): send today's reading to a chat
+unicosm telegram send --chat-id 12345
+unicosm telegram send --cron --chat-id 12345     # prints a crontab line
+```
+
+The Bot API client is stdlib-only (no extra dependency); the network lives in
+`telegram/api.py` while parsing, formatting, and dispatch stay pure and tested.
+Set `UNICOSM_TELEGRAM_CHAT_ID` to skip `--chat-id`, and
+`UNICOSM_TELEGRAM_ALLOW=<id,id>` to restrict who the bot answers.
+
 ### Optional: LLM narrative
 
 The deterministic synthesis always runs. If you set `ANTHROPIC_API_KEY` and
@@ -98,6 +123,7 @@ unicosm/
   synthesis/        deterministic weave (+ optional LLM)
   engine.py         profile + moment -> DailyReport
   cli.py / render.py
+  telegram/         optional chat front-end (daily push + analyze others)
 ```
 
 A **system** is just `reading(ctx) -> SystemReading`. To add one: write the
@@ -119,13 +145,14 @@ module, append it to `systems/REGISTRY`. That is the seam the project grows on.
 
 ## Roadmap
 
-Phases **A–H are complete** — see [`ROADMAP.md`](ROADMAP.md) for the full
-breakdown (Panchang + routine timing, deepened natal, personal time-lords,
-divination, cosmic-weather breadth, synthesis intelligence, discipline/tracking,
-UX/quality). The remaining work:
+Phases **A–H are complete**, and **Phase I** is underway (LLM narrative block,
+OS-notifier push, Obsidian export, and a **Telegram bot**) — see
+[`ROADMAP.md`](ROADMAP.md) for the full breakdown (Panchang + routine timing,
+deepened natal, personal time-lords, divination, cosmic-weather breadth,
+synthesis intelligence, discipline/tracking, UX/quality). The remaining work:
 
-- **Phase I (optional, later):** extract the engine as a library/API; a web or
-  TUI front-end; push notifications.
+- **Phase I (later):** extract the engine as a library/API; a web or TUI
+  front-end.
 - **From the catalog:** more systems still in `complementary-systems-v2.md`
   (BaZi luck pillars, Tzolkin/Dreamspell, Sabian symbols, Nine Star Ki, …).
 - **Depth:** loosing-of-the-bond peaks for ZR; richer per-system interpretation.

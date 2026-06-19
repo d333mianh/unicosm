@@ -85,7 +85,12 @@ deepening the reading and strengthening the routine.
   temperature, accent-grounded suggestion).
 - ✅ **I2** `unicosm notify` — concise morning push via the OS notifier
   (+ `--cron` for a daily job).
-- **I3** (next) Extract the engine as a library/API; a web or TUI front-end.
+- ✅ **I3** Telegram front-end — `unicosm telegram run` (interactive bot:
+  `/today`, `/blueprint`, `/analyze <birth data>` to read *another person's*
+  day) + `unicosm telegram send` (daily push, `--cron` helper). Stdlib-only Bot
+  API client; pure parser/formatter/dispatcher (tested), network isolated to one
+  module; optional chat allowlist.
+- **I4** (next) Extract the engine as a library/API; a web or TUI front-end.
 
 ---
 

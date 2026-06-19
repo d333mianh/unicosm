@@ -426,6 +426,52 @@ def cmd_notify(a: argparse.Namespace) -> int:
     return 0
 
 
+def _telegram_token(explicit: str | None) -> str | None:
+    import os
+    return (explicit or os.environ.get("UNICOSM_TELEGRAM_TOKEN")
+            or os.environ.get("TELEGRAM_BOT_TOKEN"))
+
+
+def cmd_telegram(a: argparse.Namespace) -> int:
+    import os
+
+    if a.sub == "send" and a.cron:
+        chat = a.chat_id or os.environ.get("UNICOSM_TELEGRAM_CHAT_ID", "<CHAT_ID>")
+        prof = f" --profile {a.profile}" if a.profile else ""
+        print("# add to your crontab (crontab -e) for a daily Telegram push:")
+        print(f"0 7 * * *  unicosm telegram send --chat-id {chat}{prof}")
+        return 0
+
+    token = _telegram_token(a.token)
+    if not token:
+        return _err("no bot token. Get one from @BotFather, then set "
+                    "$UNICOSM_TELEGRAM_TOKEN or pass --token.")
+
+    from .telegram import bot
+    from .telegram.api import TelegramError
+    try:
+        if a.sub == "run":
+            import logging
+            logging.basicConfig(level=logging.INFO,
+                                format="%(asctime)s %(levelname)s %(message)s")
+            print(render.dim("starting bot — Ctrl-C to stop"))
+            bot.run(token, profile_name=a.profile, use_llm=a.llm)
+            return 0
+        # send
+        chat = a.chat_id or os.environ.get("UNICOSM_TELEGRAM_CHAT_ID")
+        if not chat:
+            return _err("no chat id. Pass --chat-id or set $UNICOSM_TELEGRAM_CHAT_ID. "
+                        "(message your bot once, then read getUpdates for the id.)")
+        bot.send_daily(token, chat, profile_name=a.profile, use_llm=a.llm)
+        print(f"sent today's reading to chat {chat}")
+        return 0
+    except KeyboardInterrupt:
+        print("\nstopped.")
+        return 0
+    except TelegramError as exc:
+        return _err(str(exc))
+
+
 def cmd_windows(a: argparse.Namespace) -> int:
     print("Day windows you can anchor habits to (--window KEY):\n")
     for w in WINDOWS:
@@ -616,6 +662,22 @@ def build_parser() -> argparse.ArgumentParser:
     prm.add_argument("--cron", action="store_true", help="print a crontab line only")
     prm.add_argument("--profile")
     prm.set_defaults(func=cmd_remind)
+
+    # telegram
+    ptg = sub.add_parser("telegram", help="Telegram bot: daily push + analyze others")
+    tsub = ptg.add_subparsers(dest="sub", required=True)
+    tr = tsub.add_parser("run", help="run the bot (answers /today, /blueprint, /analyze)")
+    tr.add_argument("--token", help="bot token (or $UNICOSM_TELEGRAM_TOKEN)")
+    tr.add_argument("--profile", help="profile for /today (default: active)")
+    tr.add_argument("--llm", action="store_true", help="include the LLM reading in /today")
+    tr.set_defaults(func=cmd_telegram)
+    tsd = tsub.add_parser("send", help="push today's reading to a chat (for cron)")
+    tsd.add_argument("--chat-id", help="target chat id (or $UNICOSM_TELEGRAM_CHAT_ID)")
+    tsd.add_argument("--token", help="bot token (or $UNICOSM_TELEGRAM_TOKEN)")
+    tsd.add_argument("--profile", help="profile (default: active)")
+    tsd.add_argument("--llm", action="store_true", help="include the LLM reading")
+    tsd.add_argument("--cron", action="store_true", help="print a crontab line only")
+    tsd.set_defaults(func=cmd_telegram)
 
     # windows
     pw = sub.add_parser("windows", help="list day windows")

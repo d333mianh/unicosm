@@ -548,5 +548,99 @@ class TestDailyReport(unittest.TestCase):
             self.assertNotEqual(r.title, "(system error)", r.summary)
 
 
+class TestTelegram(unittest.TestCase):
+    """The Telegram front-end: birth-data parsing, HTML formatting, and the
+    pure reply_for dispatcher (no network touched)."""
+
+    WHEN = datetime(2026, 6, 13, 9, 30, tzinfo=ZoneInfo("Europe/Kyiv"))
+
+    @classmethod
+    def setUpClass(cls):
+        from unicosm import store
+        store.save_profile(make_profile(), make_active=True)
+
+    # ---- parse ----
+    def test_parse_full(self):
+        from unicosm.telegram.parse import parse_birth
+        p, warns = parse_birth("Ada 1990-03-21 14:30 Kyiv")
+        self.assertEqual(p.name, "Ada")
+        self.assertEqual((p.birth_dt.year, p.birth_dt.month, p.birth_dt.day), (1990, 3, 21))
+        self.assertEqual((p.birth_dt.hour, p.birth_dt.minute), (14, 30))
+        self.assertEqual(p.birth_tz, "Europe/Kyiv")
+        self.assertFalse(warns)
+
+    def test_parse_default_name_and_noon(self):
+        from unicosm.telegram.parse import parse_birth
+        p, warns = parse_birth("1991-07-08 London")
+        self.assertEqual(p.name, "Subject")
+        self.assertEqual((p.birth_dt.hour, p.birth_dt.minute), (12, 0))
+        self.assertTrue(warns)  # noon-assumed warning
+
+    def test_parse_coordinates(self):
+        from unicosm.telegram.parse import parse_birth
+        p, _ = parse_birth("2000-01-01 06:00 50.45 30.52 Europe/Kyiv")
+        self.assertAlmostEqual(p.birth_lat, 50.45)
+        self.assertAlmostEqual(p.birth_lon, 30.52)
+        self.assertEqual(p.birth_tz, "Europe/Kyiv")
+
+    def test_parse_errors(self):
+        from unicosm.telegram.parse import ParseError, parse_birth
+        with self.assertRaises(ParseError):
+            parse_birth("hello there")                       # no date
+        with self.assertRaises(ParseError):
+            parse_birth("1990-03-21 14:30 Nowhereville")     # unknown place
+
+    # ---- format ----
+    def test_format_escapes_and_clips(self):
+        from unicosm.telegram import format as fmt
+        self.assertEqual(fmt.esc("a < b & c"), "a &lt; b &amp; c")
+        self.assertEqual(len(fmt._clip("x" * 5000)), fmt.MAX)
+
+    # ---- reply_for (the whole conversation surface) ----
+    def test_reply_help(self):
+        from unicosm.telegram.bot import reply_for
+        self.assertIn("Unicosm", reply_for("/start"))
+        self.assertIn("/analyze", reply_for("/help"))
+
+    def test_reply_strips_botname_suffix(self):
+        from unicosm.telegram.bot import reply_for
+        self.assertIn("Unicosm", reply_for("/help@unicosm_bot"))
+
+    def test_reply_today_uses_active_profile(self):
+        from unicosm.telegram.bot import reply_for
+        out = reply_for("/today", now=self.WHEN)
+        self.assertIn("Cosmic state", out)
+        self.assertLessEqual(len(out), 4096)
+
+    def test_reply_blueprint(self):
+        from unicosm.telegram.bot import reply_for
+        self.assertIn("blueprint", reply_for("/blueprint", now=self.WHEN))
+
+    def test_reply_analyze_other_person(self):
+        from unicosm.telegram.bot import reply_for
+        out = reply_for("/analyze Ada 1990-03-21 14:30 Kyiv", now=self.WHEN)
+        self.assertIn("Ada", out)
+        self.assertIn("Their day", out)
+
+    def test_reply_bare_birth_is_analyzed(self):
+        from unicosm.telegram.bot import reply_for
+        out = reply_for("1990-03-21 14:30 Kyiv", now=self.WHEN)
+        self.assertIn("Their day", out)
+
+    def test_reply_analyze_bad_input_is_friendly(self):
+        from unicosm.telegram.bot import reply_for
+        self.assertIn("⚠", reply_for("/analyze not a real birth"))
+
+    def test_reply_unknown(self):
+        from unicosm.telegram.bot import reply_for
+        self.assertIn("didn't catch", reply_for("/wat"))
+
+    # ---- api guard ----
+    def test_api_requires_token(self):
+        from unicosm.telegram.api import TelegramClient, TelegramError
+        with self.assertRaises(TelegramError):
+            TelegramClient("")
+
+
 if __name__ == "__main__":
     unittest.main()
